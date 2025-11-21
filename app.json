@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "360view",
-    "slug": "360view",
+    "name": "React Panorama",
+    "slug": "react-panorama",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "scheme": "view360",
+    "scheme": "react-panorama",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
