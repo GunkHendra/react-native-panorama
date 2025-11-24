@@ -6,240 +6,280 @@ const { width } = Dimensions.get("window");
 
 const html = `
 <!doctype html>
+
 <html>
+
   <head>
-    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0" />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"
-    />
-    <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+
+    <meta charset="utf-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <style>
-      html,
+
       body,
-      #panorama {
-        height: 100%;
+
+      html {
+
         margin: 0;
-        background: #000;
+
+        padding: 0;
+
+        height: 100%;
+
+        overflow: hidden;
+
       }
 
-      #customLoader {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.65);
-        backdrop-filter: blur(4px);
-        color: white;
-        z-index: 9999;
+      #panorama {
 
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        font-family: sans-serif;
+        width: 100%;
+
+        height: 100vh;
+
       }
 
-      .spinner {
-        width: 50px;
-        height: 50px;
-        border: 6px solid rgba(255, 255, 255, 0.2);
-        border-top: 6px solid white;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-
-      #loadingScreen {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: #000;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        gap: 12px;
-        z-index: 9999;
-        color: white;
-        font-family: sans-serif;
-      }
-
-      .spinner {
-        border: 6px solid rgba(255, 255, 255, 0.2);
-        border-top: 6px solid white;
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        animation: spin 1s linear infinite;
-      }
-
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-
-      .pnlm-load-box {
-        display: none !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
-      }
     </style>
+
+    <link
+
+      rel="stylesheet"
+
+      href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"
+
+    />
+
   </head>
+
   <body>
-    <div id="loadingScreen">
-      <div class="spinner"></div>
-      <div style="font-size: 14px">Loading panorama...</div>
-    </div>
-    <div id="customLoader">
-      <div class="spinner"></div>
-    </div>
+
     <div id="panorama"></div>
+
+
+
+    <script
+
+      type="text/javascript"
+
+      src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"
+
+    ></script>
+
+
+
     <script>
-      const scenes = {
-        spotA: {
-          title: "Spot A",
-          type: "equirectangular",
-          panorama:
-            "https://raw.githubusercontent.com/GunkHendra/react-native-panorama/refs/heads/master/assets/panorama-2.jpg",
-          crossOrigin: "anonymous",
-          yaw: 0,
-          pitch: 0,
-          hfov: 100,
-          hotSpots: [
-            {
-              // Position of the clickable point (adjust using the yaw/pitch logger below)
-              pitch: 2,
-              yaw: 90,
-              type: "scene",
-              text: "Go to Spot B",
-              sceneId: "spotB",
-              targetYaw: 0,
-              targetPitch: 0,
-            },
-          ],
+
+      // --- 1. DATA DARI API KAMU (Paste JSON 'code' di sini) ---
+
+      // Pastikan format string JSON di-escape dengan benar jika ditaruh di string JS
+
+      const apiResponseCode = {
+
+        scenes: {
+
+          scene1: {
+
+            type: "sphere",
+
+            image:
+
+              "upload/1/128/250226-128-1-360-Video-Featured-StudioBinder-Compressed.jpg",
+
+            yaw: 251.8354,
+
+            pitch: -10.2782,
+
+            title: "Reception",
+
+            hotSpots: [
+
+              {
+
+                title: "Tes hotspot",
+
+                yaw: 211.337,
+
+                pitch: -6.113,
+
+                sceneId: "scene2",
+
+              },
+
+            ],
+
+          },
+
+          scene2: {
+
+            type: "sphere",
+
+            image: "upload/1/128/250226-128-1-banner-search-space.jpg",
+
+            title: "Scene Kedua",
+
+          },
+
         },
-        spotB: {
-          title: "Spot B",
-          type: "equirectangular",
-          panorama:
-            "https://raw.githubusercontent.com/GunkHendra/react-native-panorama/refs/heads/master/assets/panorama-2.jpg",
-          crossOrigin: "anonymous",
-          yaw: 180,
-          pitch: 0,
-          hfov: 100,
-          hotSpots: [
-            {
-              pitch: 0,
-              yaw: -90,
-              type: "scene",
-              text: "Back to Spot A",
-              sceneId: "spotA",
-              targetYaw: 0,
-              targetPitch: 0,
-            },
-          ],
-        },
+
       };
 
-      var viewer = pannellum.viewer("panorama", {
-        default: {
-          firstScene: "spotA",
-          autoLoad: true,
-          showControls: false,
-          showLoader: false,
-          showFullscreenCtrl: false,
-          showZoomCtrl: false,
-          sceneFadeDuration: 2000,
-        },
-        scenes: scenes,
-      });
 
-      const loader = document.getElementById("customLoader");
 
-      // Show loader when switching scenes
-      viewer.on("scenechange", function () {
-        loader.style.display = "flex";
-      });
+      // --- PENTING: GANTI INI DENGAN DOMAIN ASLI KAMU ---
 
-      // Hide loader ONLY when the new scene is ready
-      viewer.on("load", function () {
-        loader.style.display = "none";
-      });
+      // Karena gambar di JSON cuma "upload/...", WebView butuh alamat lengkap "https://..."
 
-      viewer.on("load", function () {
-        // Hide loader only ONCE
-        const loader = document.getElementById("loadingScreen");
-        if (loader) loader.style.display = "none";
-      });
+      const DOMAIN_URL = "https://virtuard.com/uploads/ipanoramaBuilder/";
 
-      // Preload all scene images on startup
-      var preloadedImages = {};
-      Object.keys(viewer.getConfig().scenes).forEach(function (sceneId) {
-        var scene = viewer.getConfig(sceneId);
-        if (scene.panorama && !preloadedImages[scene.panorama]) {
-          var img = new Image();
-          img.crossOrigin = "anonymous";
-          img.src = scene.panorama;
-          preloadedImages[scene.panorama] = img;
+
+
+      // --- 2. LOGIKA KONVERSI DATA ---
+
+      function initPanorama() {
+
+        try {
+
+          const iPanoramaScenes = apiResponseCode.scenes;
+
+          const pannellumScenes = {};
+
+          let firstSceneId = null;
+
+
+
+          // Loop semua scene
+
+          for (const [key, sceneData] of Object.entries(iPanoramaScenes)) {
+
+            if (!firstSceneId) firstSceneId = key; // Set scene pertama
+
+
+
+            // Siapkan array hotspot untuk Pannellum
+
+            let convertedHotspots = [];
+
+
+
+            if (sceneData.hotSpots && Array.isArray(sceneData.hotSpots)) {
+
+              sceneData.hotSpots.forEach((spot) => {
+
+                convertedHotspots.push({
+
+                  pitch: spot.pitch,
+
+                  yaw: spot.yaw,
+
+                  type: spot.sceneId ? "scene" : "info", // Kalau ada sceneId, berarti navigasi
+
+                  text: spot.title,
+
+                  sceneId: spot.sceneId, // ID tujuan saat diklik
+
+                });
+
+              });
+
+            }
+
+
+
+            // Masukkan ke format config Pannellum
+
+            pannellumScenes[key] = {
+
+              title: sceneData.title || key,
+
+              type: "equirectangular",
+
+              panorama: DOMAIN_URL + sceneData.image,
+
+              yaw: sceneData.yaw || 0,
+
+              pitch: sceneData.pitch || 0,
+
+              hotSpots: convertedHotspots,
+
+              crossOrigin: "anonymous",
+
+            };
+
+          }
+
+
+
+          // --- 3. RENDER PANNELLUM ---
+
+          pannellum.viewer("panorama", {
+
+            default: {
+
+              firstScene: firstSceneId,
+
+              sceneFadeDuration: 1000,
+
+              autoLoad: true,
+
+              orientationOnByDefault: false, // Set true jika ingin gerak pakai sensor HP (gyroscope)
+
+            },
+
+            scenes: pannellumScenes,
+
+          });
+
+        } catch (error) {
+
+          console.error("Error parsing config:", error);
+
+          document.getElementById("panorama").innerHTML =
+
+            "<h3 style='text-align:center; margin-top:50%'>Gagal memuat data panorama</h3>";
+
         }
-      });
 
-      // Tap anywhere to log yaw/pitch so you can place hotspots precisely
-      viewer.on("mousedown", function (e) {
-        var coords = viewer.mouseEventToCoords(e);
-        var msg = JSON.stringify({
-          type: "coords",
-          yaw: coords[1],
-          pitch: coords[0],
-        });
-        if (
-          window.ReactNativeWebView &&
-          window.ReactNativeWebView.postMessage
-        ) {
-          window.ReactNativeWebView.postMessage(msg);
-        } else {
-          console.log(msg);
-        }
-      });
+      }
+
+
+
+      // Jalankan
+
+      initPanorama();
+
     </script>
-  </body>
-</html>
 
+  </body>
+
+</html>
 `;
 
 const Panorama = () => (
-    <View style={styles.container}>
-        <WebView
-            originWhitelist={["*"]}
-            source={{ html }}
-            style={styles.viewer}
-            javaScriptEnabled
-            domStorageEnabled
-            cacheEnabled={true}
-            cacheMode="LOAD_CACHE_ELSE_NETWORK"
-            onMessage={(e) => {
-                // See yaw/pitch in Metro console to place hotspots:
-                // Example output: {"type":"coords","yaw":123.4,"pitch":-5.6}
-                console.log("Pannellum:", e.nativeEvent.data);
-            }}
-        />
-    </View>
+  <View style={styles.container}>
+    <WebView
+      originWhitelist={["*"]}
+      source={{
+        html: html,
+        baseUrl: "https://virtuard.com/"
+      }}
+      style={styles.viewer}
+      javaScriptEnabled
+      domStorageEnabled
+      cacheEnabled={true}
+      cacheMode="LOAD_CACHE_ELSE_NETWORK"
+      allowFileAccess={true}
+      allowUniversalAccessFromFileURLs={true}
+      allowFileAccessFromFileURLs={true}
+      onMessage={(e) => {
+        console.log("Pannellum:", e.nativeEvent.data);
+      }}
+    />
+  </View>
 );
 
 const styles = StyleSheet.create({
-    container: { flex: 1 },
-    viewer: { width, height: 230 },
+  container: { flex: 1 },
+  viewer: { width, height: 230 },
 });
 
 export default Panorama;
