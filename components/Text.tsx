@@ -1,4 +1,4 @@
-import { TextProps, TextVariant } from '@/interfaces/interface'
+import { TextProps, TextVariant } from '@/interfaces/component'
 import React from 'react'
 import { Text } from 'react-native'
 
