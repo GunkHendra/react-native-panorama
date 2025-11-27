@@ -1,4 +1,4 @@
-import { ButtonProps, ButtonVariant } from '@/interfaces/interface';
+import { ButtonProps, ButtonVariant } from '@/interfaces/component';
 import { AntDesign } from '@expo/vector-icons';
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
