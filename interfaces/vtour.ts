@@ -348,13 +348,16 @@ export interface EditorConfig {
 // ==========================================
 // LAYER 2: The API Response (Network Layer)
 // ==========================================
-
 export interface VTourApiResponse {
+  status: string;
+  data: VtourDataResponse;
+}
+
+export interface VtourDataResponse {
   title: string;
   thumb: string;
-  status: string;
   code: string; 
-  json_data: string; 
+  json_data: string;
 }
 
 // ==========================================
@@ -364,7 +367,6 @@ export interface VTourApiResponse {
 export interface VTour {
   title: string;
   thumb: string;
-  status: string;
   
   playerConfig: PlayerConfig; // Parsed from 'code'
   editorData: EditorConfig;   // Parsed from 'json_data'

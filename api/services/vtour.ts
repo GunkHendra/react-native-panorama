@@ -1,12 +1,12 @@
-import { EditorConfig, PlayerConfig, VTour, VTourApiResponse } from "@/interfaces/vtour";
+import { EditorConfig, PlayerConfig, VTour, VTourApiResponse, VtourDataResponse } from "@/interfaces/vtour";
 import api from "../client";
 import { VTOUR_ENDPOINTS } from "../endpoint";
 
-const transformApiResponseToVTour = (data: VTourApiResponse): VTour => {
+const transformApiResponseToVTour = (response: VTourApiResponse): VTour => {
+  const data = response.data;
   return {
     title: data.title,
     thumb: data.thumb,
-    status: data.status,
     playerConfig: data.code ? JSON.parse(data.code) : ({} as PlayerConfig),
     editorData: data.json_data ? JSON.parse(data.json_data) : ({} as EditorConfig),
   };
@@ -23,7 +23,7 @@ export const vtourService = {
     return transformApiResponseToVTour(response.data);
   },
   
-  updateVtour: async (id: string, payload: Partial<VTourApiResponse>) => {
+  updateVtour: async (id: string, payload: Partial<VtourDataResponse>) => {
     const response = await api.put<VTourApiResponse>(VTOUR_ENDPOINTS.VTOUR_BY_ID(id), payload);
     return transformApiResponseToVTour(response.data);
   },

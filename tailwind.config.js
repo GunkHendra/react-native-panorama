@@ -8,8 +8,6 @@ module.exports = {
       colors: {
         primary: "#010F1C",
         secondary: "rgba(1, 15, 28, 0.40)",
-        textPrimary: "#010F1C",
-        textSecondary: "rgba(1, 15, 28, 0.40)",
         border: "rgba(1, 15, 28, 0.12)",
         background: "#FEFEFE",
       },

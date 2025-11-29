@@ -14,7 +14,7 @@ const CustomButton = ({ variant = "dark", classname, text, onPress, hasIcon, ico
     return (
         <Pressable className={`${variants[variant]} p-4 rounded-full h-14 ${classname} ${isCenter ? 'items-center' : ''}`} onPress={onPress}>
             <View className='flex-1 flex-row justify-between'>
-                <Text className={`${variant === 'dark' ? "text-background" : "text-textSecondary"} text-md`}>{text}</Text>
+                <Text className={`${variant === 'dark' ? "text-background" : "text-secondary"} text-md`}>{text}</Text>
                 {hasIcon &&
                     <AntDesign
                         name={icon}

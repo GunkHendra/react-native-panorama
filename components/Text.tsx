@@ -14,7 +14,7 @@ const CustomText = ({ variant = "normal", classname, isDimmed, text }: TextProps
 
 
   return (
-    <Text className={`${variants[variant]} font-plusJakartaSans ${isDimmed ? "text-textSecondary" : "text-textPrimary"} ${classname}`}>{text}</Text>
+    <Text className={`${variants[variant]} font-plusJakartaSans ${isDimmed ? "text-secondary" : "text-primary"} ${classname}`}>{text}</Text>
   )
 }
 

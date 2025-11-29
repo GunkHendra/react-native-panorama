@@ -1,7 +1,11 @@
 import React, { useState } from "react";
-import { StyleSheet } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import TesScreen from "./tes";
+import CustomButton, { CustomFloatingButton } from "@/components/Button";
+import InputField from "@/components/InputField";
+import CustomText from "@/components/Text";
+import Vtour from "./vtour";
+import { Dropdown } from "react-native-element-dropdown";
 
 /**
  * @description
@@ -47,10 +51,9 @@ const index = () => {
 
     return (
         <SafeAreaView className="flex-1 bg-background" edges={['bottom', 'left', 'right']}>
-            <TesScreen></TesScreen>
-            {/* <View className="h-1/2 relative">
+            <View className="h-1/2 relative">
                 <CustomFloatingButton icon='plus' onPress={() => addHotspot()} classname="absolute top-4 right-4 z-50" />
-                <Panorama />
+                <Vtour />
             </View>
 
             <ScrollView className="p-4" contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}>
@@ -138,7 +141,7 @@ const index = () => {
                     )
                 )
                 }
-            </ScrollView> */}
+            </ScrollView>
         </SafeAreaView>
     );
 }
