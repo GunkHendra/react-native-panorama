@@ -1,21 +1,18 @@
 import CustomButton from '@/components/Button';
 import InputField from '@/components/InputField';
 import CustomText from '@/components/Text';
+import { SCENE_TYPES } from '@/constants/scene';
 import { useUpdateVtour } from '@/hooks/useVtour';
-import { PlayerScene } from '@/interfaces/vtour';
+import { PlayerConfig, PlayerScene } from '@/interfaces/vtour';
 import React, { useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 
-const SceneEditor = ({ tourId, apiScenes }: { tourId:string, apiScenes: Record<string, PlayerScene> }) => {
+const SceneEditor = ({ tourId, apiScenes }: { tourId: string, apiScenes: Record<string, PlayerScene> }) => {
     const [value, setValue] = useState<string | null>(null);
     const [openSceneId, setOpenSceneId] = useState<string | null>(null);
     const originalScenesRef = useRef(apiScenes);
-    const scene_type = [
-        { label: 'Sphere', value: 'sphere' },
-        { label: 'Cube', value: 'cube' },
-        { label: 'Cylinder', value: 'cylinder' },
-    ];
+
     const [scenes, setScenes] = useState(() => {
         return Object.entries(apiScenes).map(([key, scene]) => ({
             id: key,
@@ -72,21 +69,23 @@ const SceneEditor = ({ tourId, apiScenes }: { tourId:string, apiScenes: Record<s
 
     const updateVtour = useUpdateVtour();
 
-    // const handleSave = () => {
-    //     const updatedScenes = convertArrayToRecord(scenes);
+    const handleSave = () => {
+        const updatedScenes = convertArrayToRecord(scenes);
 
-    //     const changedScenes = getChangedScenes(
-    //         originalScenesRef.current,
-    //         updatedScenes
-    //     );
+        const changedScenes = getChangedScenes(
+            { original: originalScenesRef.current, updated: updatedScenes }
+        );
 
-    //     updateVtour.mutate({
-    //         id: tourId,
-    //         data: {
-    //             playerConfig: changedScenes
-    //         }
-    //     });
-    // };
+        updateVtour.mutate({
+            id: tourId,
+            data: {
+                playerConfig: {
+                    scenes: changedScenes
+                } as Partial<PlayerConfig>,
+            }
+        });
+        console.log("Changed Scenes:", changedScenes);
+    };
 
     const toggleScene = (id: string) => {
         setOpenSceneId(openSceneId === id ? null : id);
@@ -132,7 +131,7 @@ const SceneEditor = ({ tourId, apiScenes }: { tourId:string, apiScenes: Record<s
                                     placeholderStyle={styles.placeholderStyle}
                                     selectedTextStyle={styles.selectedTextStyle}
                                     itemTextStyle={styles.selectedTextStyle}
-                                    data={scene_type}
+                                    data={SCENE_TYPES}
                                     labelField="label"
                                     valueField="value"
                                     placeholder='Select Type'
@@ -165,7 +164,7 @@ const SceneEditor = ({ tourId, apiScenes }: { tourId:string, apiScenes: Record<s
                 text="Save"
                 variant="dark"
                 isCenter={true}
-                onPress={() => console.log("save")}
+                onPress={() => handleSave()}
             />
         </View>
     )

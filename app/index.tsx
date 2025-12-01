@@ -3,7 +3,7 @@ import InputField from "@/components/InputField";
 import CustomText from "@/components/Text";
 import { useVtour } from "@/hooks/useVtour";
 import React, { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
 import { SafeAreaView } from "react-native-safe-area-context";
 import SceneEditor from "./SceneEditor";
@@ -47,17 +47,43 @@ const index = () => {
 
     // const route = useRoute();
     // const { tourId } = route.params as { id: string };
-    const tourId = "128";
+    const tourId = "228";
     const BASE_IMG_URL = "https://virtuard.com/uploads/ipanoramaBuilder/";
     const { data: vtourData, isLoading, isError, error } = useVtour(tourId);
 
-    const scenes = vtourData?.playerConfig.scenes || {};
+    if (isLoading) {
+        return (
+            <View className="flex-1 justify-center items-center bg-background">
+                <ActivityIndicator size="large" color="#010F1C" />
+                <CustomText text="Loading Experience..." variant="h3" />
+            </View>
+        );
+    }
 
+    if (isError) {
+        return (
+            <View className="flex-1 justify-center items-center bg-background px-4">
+                <CustomText text="Failed to load." classname="font-bold mb-2" />
+                <CustomText text={`${error instanceof Error ? error.message : "Unknown error"}`} variant="h3" isDimmed={true}></CustomText>
+            </View>
+        );
+    }
+
+    if (!vtourData || !vtourData.playerConfig) {
+        return (
+            <View className="flex-1 justify-center items-center bg-background">
+                <CustomText text="No panorama data found." />
+            </View>
+        );
+    }
+
+    const vtour = vtourData?.playerConfig;
+    const scenes = vtour?.scenes || {};
     return (
         <SafeAreaView className="flex-1 bg-background" edges={['bottom', 'left', 'right']}>
             <View className="h-1/2 relative">
                 <CustomFloatingButton icon='plus' onPress={() => addHotspot()} classname="absolute top-4 right-4 z-50" />
-                <Vtour vtourData={vtourData} isLoading={isLoading} isError={isError} error={error} BASE_IMG_URL={BASE_IMG_URL} />
+                <Vtour vtour={vtour} BASE_IMG_URL={BASE_IMG_URL} />
             </View>
 
             <ScrollView className="p-4" contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}>
@@ -98,7 +124,7 @@ const index = () => {
                                             valueField="value"
                                             placeholder='Go to the Scene'
                                             value={value}
-                                            onChange={item => {
+                                            onChange={(item: any) => {
                                                 setValue(item.value);
                                             }}
                                         />

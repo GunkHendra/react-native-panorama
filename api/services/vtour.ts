@@ -2,6 +2,22 @@ import { EditorConfig, PlayerConfig, VTour, VTourApiResponse, VtourDataResponse 
 import api from "../client";
 import { VTOUR_ENDPOINTS } from "../endpoint";
 
+const transformVTourToApiPayload = (vtour: Partial<VTour>): Partial<VtourDataResponse> => {
+  const payload: Partial<VtourDataResponse> = {};
+
+  if (vtour.title !== undefined) payload.title = vtour.title;
+  if (vtour.thumb !== undefined) payload.thumb = vtour.thumb;
+
+  if (vtour.playerConfig !== undefined)
+    payload.code = JSON.stringify(vtour.playerConfig);
+
+  if (vtour.editorData !== undefined)
+    payload.json_data = JSON.stringify(vtour.editorData);
+
+  return payload;
+};
+
+
 const transformApiResponseToVTour = (response: VTourApiResponse): VTour => {
   const data = response.data;
   return {
@@ -23,8 +39,11 @@ export const vtourService = {
     return transformApiResponseToVTour(response.data);
   },
   
-  updateVtour: async (id: string, payload: Partial<VtourDataResponse>) => {
+  updateVtour: async (id: string, vtour: Partial<VTour>) => {
+    const payload = transformVTourToApiPayload(vtour);
+    console.log("Update Vtour Payload:", payload);
     const response = await api.put<VTourApiResponse>(VTOUR_ENDPOINTS.VTOUR_BY_ID(id), payload);
+    console.log("Update Vtour Response:", response.data);
     return transformApiResponseToVTour(response.data);
   },
 
@@ -40,7 +59,7 @@ export const vtourService = {
     return response.data;
   },
   
-  updateJsonData: async (id: string, configData: EditorConfig): Promise<VTour> => {
+  updateJsonData: async (id: string, configData: Partial<EditorConfig>): Promise<VTour> => {
     const payload = {
       json_data: JSON.stringify(configData)
     };

@@ -1,41 +1,26 @@
 import CustomText from "@/components/Text";
+import { PlayerConfig } from "@/interfaces/vtour";
 import { generateVtourHTML } from "@/utils/vtourHTMLGenerator";
 import React from "react";
-import { ActivityIndicator, Dimensions, StyleSheet, View } from "react-native";
+import { Dimensions, StyleSheet, View } from "react-native";
 import WebView from "react-native-webview";
 
 const { width } = Dimensions.get("window");
 
 const html = ``;
 
-const Vtour = ({ vtourData, isLoading, isError, error, BASE_IMG_URL }: any) => {
-  if (isLoading) {
+const Vtour = ({ vtour, BASE_IMG_URL }: { vtour: Partial<PlayerConfig>, BASE_IMG_URL: string }) => {
+
+  const html = generateVtourHTML(vtour, BASE_IMG_URL);
+
+  if (!vtour.scenes) {
     return (
       <View className="flex-1 justify-center items-center bg-background">
-        <ActivityIndicator size="large" color="#010F1C" />
-        <CustomText text="Loading Experience..." classname="text-primary mt-4 font-medium" />
+        <CustomText text="There are no scenes yet." />
       </View>
     );
   }
 
-  if (isError) {
-    return (
-      <View className="flex-1 justify-center items-center bg-background px-4">
-        <CustomText text="Failed to load." classname="text-primary text-lg font-bold mb-2" />
-        <CustomText text={`${error instanceof Error ? error.message : "Unknown error"}`} classname="text-secondary text-center"></CustomText>
-      </View>
-    );
-  }
-
-  if (!vtourData || !vtourData.playerConfig) {
-    return (
-      <View className="flex-1 justify-center items-center bg-background">
-        <CustomText text="No panorama data found." classname="text-primary font-medium" />
-      </View>
-    );
-  }
-
-  const html = generateVtourHTML(vtourData?.playerConfig, BASE_IMG_URL);
   return (
     <View style={styles.container}>
       <WebView

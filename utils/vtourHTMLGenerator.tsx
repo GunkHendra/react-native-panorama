@@ -1,6 +1,6 @@
 import { PlayerConfig } from "@/interfaces/vtour";
 
-export const generateVtourHTML = (apiData: PlayerConfig, baseUrl: string): string => {
+export const generateVtourHTML = (apiData: Partial<PlayerConfig>, baseUrl: string): string => {
 
   const scenesData = apiData.scenes;
 

@@ -367,6 +367,6 @@ export interface VtourDataResponse {
 export interface VTour {
   title: string;
   thumb: string;
-  playerConfig: PlayerConfig; // Parsed from 'code'
-  editorData: EditorConfig;   // Parsed from 'json_data'
+  playerConfig: Partial<PlayerConfig>; // Parsed from 'code'
+  editorData: Partial<EditorConfig>;   // Parsed from 'json_data'
 }
