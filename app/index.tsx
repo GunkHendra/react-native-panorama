@@ -1,11 +1,13 @@
-import React, { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import CustomButton, { CustomFloatingButton } from "@/components/Button";
 import InputField from "@/components/InputField";
 import CustomText from "@/components/Text";
-import Vtour from "./vtour";
+import { useVtour } from "@/hooks/useVtour";
+import React, { useState } from "react";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
+import { SafeAreaView } from "react-native-safe-area-context";
+import SceneEditor from "./SceneEditor";
+import Vtour from "./Vtour";
 
 /**
  * @description
@@ -26,12 +28,6 @@ const index = () => {
     const [activeTab, setActiveTab] = useState<'scenes' | 'hotspots'>('scenes');
     const [value, setValue] = useState(null);
 
-    const scene_type = [
-        { label: 'Sphere', value: 'sphere' },
-        { label: 'Cube', value: 'cube' },
-        { label: 'Cylinder', value: 'cylinder' },
-    ];
-
     const scene_data = [
         { label: 'Scene 1 Front', value: '1' },
         { label: 'Scene 2 Bedroom', value: '2' },
@@ -49,11 +45,19 @@ const index = () => {
         setHotspots([...hotspots, newHotspot]);
     }
 
+    // const route = useRoute();
+    // const { tourId } = route.params as { id: string };
+    const tourId = "128";
+    const BASE_IMG_URL = "https://virtuard.com/uploads/ipanoramaBuilder/";
+    const { data: vtourData, isLoading, isError, error } = useVtour(tourId);
+
+    const scenes = vtourData?.playerConfig.scenes || {};
+
     return (
         <SafeAreaView className="flex-1 bg-background" edges={['bottom', 'left', 'right']}>
             <View className="h-1/2 relative">
                 <CustomFloatingButton icon='plus' onPress={() => addHotspot()} classname="absolute top-4 right-4 z-50" />
-                <Vtour />
+                <Vtour vtourData={vtourData} isLoading={isLoading} isError={isError} error={error} BASE_IMG_URL={BASE_IMG_URL} />
             </View>
 
             <ScrollView className="p-4" contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}>
@@ -67,38 +71,7 @@ const index = () => {
                 </View>
 
                 {activeTab === 'scenes' &&
-                    <View>
-                        <View className="gap-2 mb-4">
-                            <CustomText text="Scene Title" />
-                            <InputField placeholder="Enter Title" />
-                        </View>
-
-                        <View className="gap-2 mb-4">
-                            <CustomText text="Scene Type" />
-                            <Dropdown
-                                style={styles.dropdown}
-                                containerStyle={styles.container}
-                                placeholderStyle={styles.placeholderStyle}
-                                selectedTextStyle={styles.selectedTextStyle}
-                                itemTextStyle={styles.selectedTextStyle}
-                                data={scene_type}
-                                labelField="label"
-                                valueField="value"
-                                placeholder='Select Type'
-                                value={value}
-                                onChange={item => {
-                                    setValue(item.value);
-                                }}
-                            />
-                        </View>
-
-                        <View className="gap-2 mb-4">
-                            <CustomText text="Upload Image" />
-                            <CustomButton text={"Upload a file"} variant="light" onPress={() => console.log('pressed')} hasIcon={true} icon='upload' />
-                        </View>
-
-                        <CustomButton text={"Save"} variant="dark" isCenter={true} onPress={() => console.log('pressed')} />
-                    </View>
+                    <SceneEditor tourId={tourId} apiScenes={scenes} />
                 }
                 {activeTab === 'hotspots' && (
                     hotspots.length === 0 ? (

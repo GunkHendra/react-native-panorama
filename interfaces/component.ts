@@ -14,7 +14,7 @@ export interface TextProps {
     text: string;
 }
 
-export type ButtonVariant = 'dark' | 'light';
+export type ButtonVariant = 'dark' | 'light' | 'lightPrimary';
 
 export interface ButtonProps {
     variant?: ButtonVariant;

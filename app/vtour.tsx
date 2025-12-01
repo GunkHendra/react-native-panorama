@@ -1,5 +1,4 @@
 import CustomText from "@/components/Text";
-import { useVtour } from "@/hooks/useVtour";
 import { generateVtourHTML } from "@/utils/vtourHTMLGenerator";
 import React from "react";
 import { ActivityIndicator, Dimensions, StyleSheet, View } from "react-native";
@@ -9,14 +8,7 @@ const { width } = Dimensions.get("window");
 
 const html = ``;
 
-const Vtour = () => {
-  // const route = useRoute();
-  // const { tourId } = route.params as { id: string };
-  const tourId = "128";
-  const BASE_IMG_URL = "https://virtuard.com/uploads/ipanoramaBuilder/";
-
-  const { data: vtourData, isLoading, isError, error } = useVtour(tourId);
-  console.log("VTour Data:", vtourData);
+const Vtour = ({ vtourData, isLoading, isError, error, BASE_IMG_URL }: any) => {
   if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-background">
