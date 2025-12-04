@@ -8,11 +8,11 @@ const transformVTourToApiPayload = (vtour: Partial<VTour>): Partial<VtourDataRes
   if (vtour.title !== undefined) payload.title = vtour.title;
   if (vtour.thumb !== undefined) payload.thumb = vtour.thumb;
 
-  if (vtour.playerConfig !== undefined)
-    payload.code = JSON.stringify(vtour.playerConfig);
+  if (vtour.code !== undefined)
+    payload.code = JSON.stringify(vtour.code);
 
-  if (vtour.editorData !== undefined)
-    payload.json_data = JSON.stringify(vtour.editorData);
+  if (vtour.json_data !== undefined)
+    payload.json_data = JSON.stringify(vtour.json_data);
 
   return payload;
 };
@@ -23,8 +23,8 @@ const transformApiResponseToVTour = (response: VTourApiResponse): VTour => {
   return {
     title: data.title,
     thumb: data.thumb,
-    playerConfig: data.code ? JSON.parse(data.code) : ({} as PlayerConfig),
-    editorData: data.json_data ? JSON.parse(data.json_data) : ({} as EditorConfig),
+    code: data.code ? JSON.parse(data.code) : ({} as PlayerConfig),
+    json_data: data.json_data ? JSON.parse(data.json_data) : ({} as EditorConfig),
   };
 };
 

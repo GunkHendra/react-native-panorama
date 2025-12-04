@@ -1,11 +1,12 @@
-import CustomButton, { CustomFloatingButton } from "@/components/Button";
-import InputField from "@/components/InputField";
+import { CustomFloatingButton } from "@/components/Button";
 import CustomText from "@/components/Text";
 import { useVtour } from "@/hooks/useVtour";
+import { PlayerHotspot } from "@/interfaces/vtour";
+import { AntDesign } from '@expo/vector-icons';
 import React, { useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Dropdown } from "react-native-element-dropdown";
 import { SafeAreaView } from "react-native-safe-area-context";
+import HotspotsEditor from "./HotspotsEditor";
 import SceneEditor from "./SceneEditor";
 import Vtour from "./Vtour";
 
@@ -26,21 +27,26 @@ import Vtour from "./Vtour";
 
 const index = () => {
     const [activeTab, setActiveTab] = useState<'scenes' | 'hotspots'>('scenes');
-    const [value, setValue] = useState(null);
 
-    const scene_data = [
-        { label: 'Scene 1 Front', value: '1' },
-        { label: 'Scene 2 Bedroom', value: '2' },
-        { label: 'Scene 3 Indoor', value: '3' },
-    ];
-
-    const [hotspots, setHotspots] = useState<{ title: string, targetScene?: string, url?: string }[]>([]);
+    const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
+    const [hotspots, setHotspots] = useState<PlayerHotspot[]>([]);
 
     const addHotspot = () => {
-        const newHotspot = {
-            title: `Hotspot ${hotspots.length + 1}`,
-            targetScene: '',
-            url: '',
+        const newHotspot: PlayerHotspot = {
+            title: "Hotspot " + (hotspots.length + 1),
+            yaw: 0,
+            pitch: 0,
+            sceneId: "",
+            imageUrl: null,
+            imageWidth: null,
+            imageHeight: null,
+            link: null,
+            linkNewWindow: false,
+            popoverHtml: true,
+            popoverContent: null,
+            popoverSelector: null,
+            popoverLazyload: true,
+            popoverShow: false,
         };
         setHotspots([...hotspots, newHotspot]);
     }
@@ -51,11 +57,46 @@ const index = () => {
     const BASE_IMG_URL = "https://virtuard.com/uploads/ipanoramaBuilder/";
     const { data: vtourData, isLoading, isError, error } = useVtour(tourId);
 
+    const sceneIds = Object.keys(vtourData?.code.scenes || {});
+    React.useEffect(() => {
+        if (!vtourData?.code.scenes) return;
+        if (sceneIds.length === 0) return;
+
+        const firstScene = sceneIds[0];
+        setActiveSceneId(firstScene);
+
+        const initialHotspots = vtourData?.code.scenes[firstScene]?.hotSpots || [];
+        setHotspots(initialHotspots);
+    }, [vtourData?.code.scenes]);
+
+    const goPrevScene = () => {
+        if (!activeSceneId) return;
+
+        const index = sceneIds.indexOf(activeSceneId);
+        const prevIndex = (index - 1 + sceneIds.length) % sceneIds.length;
+        const newSceneId = sceneIds[prevIndex];
+
+        setActiveSceneId(newSceneId);
+        setHotspots(scenes[newSceneId]?.hotSpots || []);
+    };
+
+    const goNextScene = () => {
+        if (!activeSceneId) return;
+
+        const index = sceneIds.indexOf(activeSceneId);
+        const nextIndex = (index + 1) % sceneIds.length;
+        const newSceneId = sceneIds[nextIndex];
+
+        setActiveSceneId(newSceneId);
+        setHotspots(scenes[newSceneId]?.hotSpots || []);
+    };
+
+
     if (isLoading) {
         return (
             <View className="flex-1 justify-center items-center bg-background">
                 <ActivityIndicator size="large" color="#010F1C" />
-                <CustomText text="Loading Experience..." variant="h3" />
+                <CustomText text="Loading Experience..." size="h3" />
             </View>
         );
     }
@@ -64,12 +105,12 @@ const index = () => {
         return (
             <View className="flex-1 justify-center items-center bg-background px-4">
                 <CustomText text="Failed to load." classname="font-bold mb-2" />
-                <CustomText text={`${error instanceof Error ? error.message : "Unknown error"}`} variant="h3" isDimmed={true}></CustomText>
+                <CustomText text={`${error instanceof Error ? error.message : "Unknown error"}`} size="h3" isDimmed={true}></CustomText>
             </View>
         );
     }
 
-    if (!vtourData || !vtourData.playerConfig) {
+    if (!vtourData || !vtourData.code || !vtourData.json_data) {
         return (
             <View className="flex-1 justify-center items-center bg-background">
                 <CustomText text="No panorama data found." />
@@ -77,13 +118,36 @@ const index = () => {
         );
     }
 
-    const vtour = vtourData?.playerConfig;
+    const vtour = vtourData?.code;
     const scenes = vtour?.scenes || {};
+
     return (
         <SafeAreaView className="flex-1 bg-background" edges={['bottom', 'left', 'right']}>
             <View className="h-1/2 relative">
                 <CustomFloatingButton icon='plus' onPress={() => addHotspot()} classname="absolute top-4 right-4 z-50" />
-                <Vtour vtour={vtour} BASE_IMG_URL={BASE_IMG_URL} />
+                <Vtour vtour={vtour} BASE_IMG_URL={BASE_IMG_URL} activeSceneId={activeSceneId ? activeSceneId : ""} onSceneChange={(newSceneId) => setActiveSceneId(newSceneId)} />
+                <View className="items-center">
+                    <View className="absolute bottom-4 z-50">
+                        <View className={`bg-primary p-3 rounded-full h-12 justify-center items-center gap-2 flex-row`}>
+                            <Pressable onPress={goPrevScene}>
+                                <AntDesign
+                                    name={"caret-left"}
+                                    size={18}
+                                    color={'#FEFEFE'}
+                                />
+                            </Pressable>
+                            <CustomText text={activeSceneId && scenes[activeSceneId].title ? scenes[activeSceneId].title : `Untitled Scene`} size="normal" variant="light" />
+                            <Pressable onPress={goNextScene}>
+                                <AntDesign
+                                    name={"caret-right"}
+                                    size={18}
+                                    color={'#FEFEFE'}
+                                />
+                            </Pressable>
+
+                        </View>
+                    </View>
+                </View>
             </View>
 
             <ScrollView className="p-4" contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}>
@@ -97,7 +161,7 @@ const index = () => {
                 </View>
 
                 {activeTab === 'scenes' &&
-                    <SceneEditor tourId={tourId} apiScenes={scenes} />
+                    <SceneEditor tourId={tourId} activeScene={activeSceneId ? scenes[activeSceneId] : null} />
                 }
                 {activeTab === 'hotspots' && (
                     hotspots.length === 0 ? (
@@ -106,37 +170,7 @@ const index = () => {
                         </View>
 
                     ) : (
-                        <View className="flex-1">
-                            {hotspots.map((hotspot, index) => (
-                                <View key={index}>
-                                    <CustomText text={hotspot.title} variant="h3" classname="mb-2 font-semibold" />
-                                    <View className="gap-2 mb-4">
-                                        <CustomText text="Hotspot Title" />
-                                        <InputField placeholder="Enter Title" />
-                                        <Dropdown
-                                            style={styles.dropdown}
-                                            containerStyle={styles.container}
-                                            placeholderStyle={styles.placeholderStyle}
-                                            selectedTextStyle={styles.selectedTextStyle}
-                                            itemTextStyle={styles.selectedTextStyle}
-                                            data={scene_data}
-                                            labelField="label"
-                                            valueField="value"
-                                            placeholder='Go to the Scene'
-                                            value={value}
-                                            onChange={(item: any) => {
-                                                setValue(item.value);
-                                            }}
-                                        />
-                                    </View>
-                                    <View className="gap-2 mb-4">
-                                        <CustomText text="URL" />
-                                        <InputField placeholder="Enter URL" />
-                                    </View>
-                                </View>
-                            ))}
-                            <CustomButton text={"Save"} variant="dark" isCenter={true} onPress={() => console.log('pressed')} />
-                        </View>
+                        <HotspotsEditor hotspots={hotspots} apiScenes={scenes} />
                     )
                 )
                 }

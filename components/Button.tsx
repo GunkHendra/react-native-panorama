@@ -40,6 +40,24 @@ const CustomFloatingButton = ({ onPress, classname, icon }: { onPress?: () => vo
     )
 }
 
+const CustomArrowButton = ({ onPress, classname, icon1, icon2, text }: { onPress?: () => void, classname?: string, icon1: any, icon2: any, text: string }) => {
+    return (
+        <Pressable className={`bg-primary p-3 rounded-full h-12 justify-center items-center gap-2 flex-row ${classname}`} onPress={onPress}>
+            <AntDesign
+                name={icon1}
+                size={18}
+                color={'#FEFEFE'}
+            />
+            <Text className={`text-background text-md ${classname}`}>{text}</Text>
+            <AntDesign
+                name={icon2}
+                size={18}
+                color={'#FEFEFE'}
+            />
+        </Pressable>
+    )
+}
+
 export default CustomButton;
-export { CustomFloatingButton };
+export { CustomArrowButton, CustomFloatingButton };
 

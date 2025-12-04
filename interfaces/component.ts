@@ -5,13 +5,14 @@ export interface InputFieldProps {
     onChangeText?: (text: string) => void;
 }
 
-export type TextVariant = 'h1' | 'h2' | 'h3' | 'normal' | 'small';
+export type TextSize = 'h1' | 'h2' | 'h3' | 'normal' | 'small';
 
 export interface TextProps {
-    variant?: TextVariant;
+    size?: TextSize;
     classname?: string;
     isDimmed?: boolean;
     text: string;
+    variant?: 'light' | 'dark';
 }
 
 export type ButtonVariant = 'dark' | 'light' | 'lightPrimary';

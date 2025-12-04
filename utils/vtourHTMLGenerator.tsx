@@ -1,6 +1,6 @@
 import { PlayerConfig } from "@/interfaces/vtour";
 
-export const generateVtourHTML = (apiData: Partial<PlayerConfig>, baseUrl: string): string => {
+export const generateVtourHTML = (apiData: Partial<PlayerConfig>, baseUrl: string, initialSceneId?: string): string => {
 
   const scenesData = apiData.scenes;
 
@@ -118,6 +118,9 @@ export const generateVtourHTML = (apiData: Partial<PlayerConfig>, baseUrl: strin
       const processedScenes = {};
       let firstSceneId = null;
 
+      // Determine starting scene: passed prop OR first key
+      let startScene = "${initialSceneId}";
+
       // Helper untuk menggabungkan URL agar aman dari double slash
       const getFullUrl = (path) => {
          if (!path) return "";
@@ -147,7 +150,7 @@ export const generateVtourHTML = (apiData: Partial<PlayerConfig>, baseUrl: strin
             }));
 
             processedScenes[key] = {
-                title: scene.title || key,
+                // title: scene.title || key,
                 type: "equirectangular",
                 // API pakai 'image', Pannellum pakai 'panorama'
                 panorama: getFullUrl(scene.image), 
@@ -160,13 +163,18 @@ export const generateVtourHTML = (apiData: Partial<PlayerConfig>, baseUrl: strin
         });
       }
 
+      // Fallback if initialSceneId wasn't found or provided
+      if (!startScene && Object.keys(processedScenes).length > 0) {
+        startScene = Object.keys(processedScenes)[0];
+      }
+
       // ==========================================
       // INISIALISASI VIEWER (KODE ASLI KAMU)
       // ==========================================
 
       var viewer = pannellum.viewer("panorama", {
         default: {
-          firstScene: firstSceneId, // Menggunakan ID dinamis
+          firstScene: startScene, // Use the specific scene ID
           autoLoad: true,
           showControls: false,
           showLoader: false,
@@ -193,6 +201,30 @@ export const generateVtourHTML = (apiData: Partial<PlayerConfig>, baseUrl: strin
         // Hide loader only ONCE
         const loader = document.getElementById("loadingScreen");
         if (loader) loader.style.display = "none";
+      });
+
+      // ==========================================
+      // SYNC: WEBVIEW -> REACT NATIVE (Hotspot Click)
+      // ==========================================
+
+      // When the scene finishes loading (happens on init AND hotspot click)
+      window.viewer.on("load", function () {
+        const currentSceneId = window.viewer.getScene();
+        
+        // Hide loader
+        const loader = document.getElementById("loadingScreen");
+        if (loader) loader.style.display = "none";
+        document.getElementById("customLoader").style.display = "none";
+
+        // Send message to React Native
+        const msg = JSON.stringify({
+          type: "sceneChange",
+          sceneId: currentSceneId
+        });
+        
+        if (window.ReactNativeWebView) {
+          window.ReactNativeWebView.postMessage(msg);
+        }
       });
 
       // Preload all scene images on startup

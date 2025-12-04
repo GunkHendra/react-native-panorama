@@ -1,10 +1,10 @@
-import { TextProps, TextVariant } from '@/interfaces/component'
+import { TextProps, TextSize } from '@/interfaces/component'
 import React from 'react'
 import { Text } from 'react-native'
 
-const CustomText = ({ variant = "normal", classname, isDimmed, text }: TextProps) => {
+const CustomText = ({ size = "normal", classname, isDimmed, text, variant = "dark" }: TextProps) => {
 
-  const variants: Record<TextVariant, string> = {
+  const sizes: Record<TextSize, string> = {
     h1: 'text-3xl',
     h2: 'text-xl',
     h3: 'text-lg',
@@ -12,9 +12,14 @@ const CustomText = ({ variant = "normal", classname, isDimmed, text }: TextProps
     small: 'text-xs',
   }
 
+  const variants: Record<string, string> = {
+    light: 'text-background',
+    dark: 'text-primary',
+  }
+
 
   return (
-    <Text className={`${variants[variant]} font-plusJakartaSans ${isDimmed ? "text-secondary" : "text-primary"} ${classname}`}>{text}</Text>
+    <Text className={`${sizes[size]} font-plusJakartaSans ${isDimmed ? "text-secondary" : variants[variant]} ${classname}`}>{text}</Text>
   )
 }
 

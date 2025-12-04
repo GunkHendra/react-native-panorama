@@ -6,7 +6,7 @@
 // 1. Hotspot Definition (Inside the Player)
 // ==========================================
 export interface PlayerHotspot {
-  title: string | null;
+  title: string;
   yaw: number;
   pitch: number;
   sceneId: string; // The ID of the scene this hotspot links to
@@ -367,6 +367,6 @@ export interface VtourDataResponse {
 export interface VTour {
   title: string;
   thumb: string;
-  playerConfig: Partial<PlayerConfig>; // Parsed from 'code'
-  editorData: Partial<EditorConfig>;   // Parsed from 'json_data'
+  code: Partial<PlayerConfig>; // Parsed from 'code'
+  json_data: Partial<EditorConfig>;   // Parsed from 'json_data'
 }

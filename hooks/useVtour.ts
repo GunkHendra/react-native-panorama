@@ -54,7 +54,7 @@ export const useAddNewImage = () => {
 export const useUpdateJsonData = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({id, configData}: {id: string, configData: VTour["editorData"]}) => vtourService.updateJsonData(id, configData),
+        mutationFn: ({id, configData}: {id: string, configData: VTour["json_data"]}) => vtourService.updateJsonData(id, configData),
         onSuccess: (data, variables) => {
             queryClient.invalidateQueries({ queryKey: ['vtour', variables.id] });
         }
