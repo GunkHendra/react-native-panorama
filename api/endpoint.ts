@@ -1,7 +1,9 @@
 export const VTOUR_ENDPOINTS = {
+    GET_ALL_VTOUR: "api/user/vtour",
     CREATE_VTOUR: "api/user/vtour",
-    VTOUR_BY_ID: (id: string) => `api/user/vtour/${id}`,
+    GET_A_VTOUR: (id: string) => `api/user/vtour/${id}`,
+    UPDATE_A_VTOUR: (id: string) => `api/user/vtour/${id}`,
+    DELETE_A_VTOUR: (id: string) => `api/user/vtour/${id}`,
     ADD_IMAGE: (id: string) => `api/user/vtour/${id}/add-image`,
-    UPDATE_JSON: (id: string) => `api/user/vtour/${id}/update-json-data`,
-    GET_FILES: (id: string) => `api/user/vtour/${id}/get-files`,
+    GET_FILES: (id: string) => `api/user/vtour/get-files/${id}`,
 }

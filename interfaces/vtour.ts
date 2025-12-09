@@ -348,16 +348,18 @@ export interface EditorConfig {
 // ==========================================
 // LAYER 2: The API Response (Network Layer)
 // ==========================================
-export interface VTourApiResponse {
+export interface VTourApiResponse<T> {
   status: string;
-  data: VtourDataResponse;
+  data: T;
 }
 
-export interface VtourDataResponse {
-  title: string;
-  thumb: string;
-  code: string; 
-  json_data: string;
+export interface DirectoryItem {
+   type: "directory";
+   name: string;
+   files: {
+      type: "file";
+      name: string;
+   }[];
 }
 
 // ==========================================
@@ -365,8 +367,19 @@ export interface VtourDataResponse {
 // ==========================================
 
 export interface VTour {
+  id: number;
+  user_id: number;
   title: string;
   thumb: string;
   code: Partial<PlayerConfig>; // Parsed from 'code'
   json_data: Partial<EditorConfig>;   // Parsed from 'json_data'
+}
+
+export interface VTourStringified {
+  id: number;
+  user_id: number;
+  title: string;
+  thumb: string;
+  code: string;       // Stringified JSON
+  json_data: string;  // Stringified JSON
 }

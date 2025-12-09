@@ -2,6 +2,14 @@ import { vtourService } from "@/api/services/vtour"
 import { VTour } from "@/interfaces/vtour"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
+export const useAllVtour = () => {
+    return useQuery<VTour[], Error>({
+        queryKey: ['vtours'],
+        queryFn: () => vtourService.getAllVtours(),
+    })
+}
+
+
 export const useVtour = (id: string) => {
     return useQuery<VTour, Error>({
         queryKey: ['vtour', id],
@@ -45,16 +53,6 @@ export const useAddNewImage = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: ({id, imageData}: {id: string, imageData: FormData}) => vtourService.addNewImage(id, imageData),
-        onSuccess: (data, variables) => {
-            queryClient.invalidateQueries({ queryKey: ['vtour', variables.id] });
-        }
-    });
-}
-
-export const useUpdateJsonData = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: ({id, configData}: {id: string, configData: VTour["json_data"]}) => vtourService.updateJsonData(id, configData),
         onSuccess: (data, variables) => {
             queryClient.invalidateQueries({ queryKey: ['vtour', variables.id] });
         }

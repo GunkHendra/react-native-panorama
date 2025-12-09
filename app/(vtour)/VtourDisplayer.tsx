@@ -1,16 +1,19 @@
 import { PlayerConfig } from "@/interfaces/vtour";
 import { generateVtourHTML } from "@/utils/vtourHTMLGenerator";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
 import WebView from "react-native-webview";
 
 const { width } = Dimensions.get("window");
 
-const Vtour = ({ vtour, BASE_IMG_URL, activeSceneId, onSceneChange }: { vtour: Partial<PlayerConfig>, BASE_IMG_URL: string, activeSceneId: string, onSceneChange: (id: string) => void }) => {
+const VtourDisplayer = ({ vtour, BASE_IMG_URL, activeSceneId, onSceneChange }: { vtour: Partial<PlayerConfig>, BASE_IMG_URL: string, activeSceneId: string | null, onSceneChange: (id: string) => void }) => {
+
   const webViewRef = useRef<WebView>(null);
-  const htmlContent = React.useMemo(() => {
+
+  const htmlContent = useMemo(() => {
+    if (!vtour || !vtour.scenes || !activeSceneId) return "";
     return generateVtourHTML(vtour, BASE_IMG_URL, activeSceneId);
-  }, [vtour, BASE_IMG_URL]);
+  }, [vtour, BASE_IMG_URL, activeSceneId]);
 
   useEffect(() => {
     if (webViewRef.current && activeSceneId) {
@@ -28,13 +31,9 @@ const Vtour = ({ vtour, BASE_IMG_URL, activeSceneId, onSceneChange }: { vtour: P
   const handleMessage = (event: any) => {
     try {
       const data = JSON.parse(event.nativeEvent.data);
-
-      if (data.type === "sceneChange") {
-        if (data.sceneId !== activeSceneId) {
-          onSceneChange(data.sceneId);
-        }
+      if (data.type === "sceneChange" && data.sceneId !== activeSceneId) {
+        onSceneChange(data.sceneId);
       }
-
       if (data.type === "coords") {
         console.log("Pannellum Coords:", data);
       }
@@ -71,4 +70,4 @@ const styles = StyleSheet.create({
   viewer: { width, height: 230 },
 });
 
-export default Vtour;
+export default VtourDisplayer;

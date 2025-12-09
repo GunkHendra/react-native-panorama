@@ -1,14 +1,11 @@
-import { CustomFloatingButton } from "@/components/Button";
+import CustomButton from "@/components/Button";
+import InputField from "@/components/InputField";
 import CustomText from "@/components/Text";
-import { useVtour } from "@/hooks/useVtour";
-import { PlayerHotspot } from "@/interfaces/vtour";
-import { AntDesign } from '@expo/vector-icons';
-import React, { useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useAllVtour, useCreateVtour } from "@/hooks/useVtour";
+import { useRouter } from "expo-router";
+import React from "react";
+import { ActivityIndicator, Modal, Pressable, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import HotspotsEditor from "./HotspotsEditor";
-import SceneEditor from "./SceneEditor";
-import Vtour from "./Vtour";
 
 /**
  * @description
@@ -26,70 +23,13 @@ import Vtour from "./Vtour";
  */
 
 const index = () => {
-    const [activeTab, setActiveTab] = useState<'scenes' | 'hotspots'>('scenes');
-
-    const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
-    const [hotspots, setHotspots] = useState<PlayerHotspot[]>([]);
-
-    const addHotspot = () => {
-        const newHotspot: PlayerHotspot = {
-            title: "Hotspot " + (hotspots.length + 1),
-            yaw: 0,
-            pitch: 0,
-            sceneId: "",
-            imageUrl: null,
-            imageWidth: null,
-            imageHeight: null,
-            link: null,
-            linkNewWindow: false,
-            popoverHtml: true,
-            popoverContent: null,
-            popoverSelector: null,
-            popoverLazyload: true,
-            popoverShow: false,
-        };
-        setHotspots([...hotspots, newHotspot]);
-    }
-
-    // const route = useRoute();
-    // const { tourId } = route.params as { id: string };
-    const tourId = "228";
-    const BASE_IMG_URL = "https://virtuard.com/uploads/ipanoramaBuilder/";
-    const { data: vtourData, isLoading, isError, error } = useVtour(tourId);
-
-    const sceneIds = Object.keys(vtourData?.code.scenes || {});
-    React.useEffect(() => {
-        if (!vtourData?.code.scenes) return;
-        if (sceneIds.length === 0) return;
-
-        const firstScene = sceneIds[0];
-        setActiveSceneId(firstScene);
-
-        const initialHotspots = vtourData?.code.scenes[firstScene]?.hotSpots || [];
-        setHotspots(initialHotspots);
-    }, [vtourData?.code.scenes]);
-
-    const goPrevScene = () => {
-        if (!activeSceneId) return;
-
-        const index = sceneIds.indexOf(activeSceneId);
-        const prevIndex = (index - 1 + sceneIds.length) % sceneIds.length;
-        const newSceneId = sceneIds[prevIndex];
-
-        setActiveSceneId(newSceneId);
-        setHotspots(scenes[newSceneId]?.hotSpots || []);
-    };
-
-    const goNextScene = () => {
-        if (!activeSceneId) return;
-
-        const index = sceneIds.indexOf(activeSceneId);
-        const nextIndex = (index + 1) % sceneIds.length;
-        const newSceneId = sceneIds[nextIndex];
-
-        setActiveSceneId(newSceneId);
-        setHotspots(scenes[newSceneId]?.hotSpots || []);
-    };
+    const router = useRouter();
+    const CURRENT_USER_ID = 4818;
+    const { data: allVtourData, isLoading, isError, error } = useAllVtour();
+    const userVtours = (allVtourData ?? []).filter(v => v.user_id === CURRENT_USER_ID);
+    const [showCreateModal, setShowCreateModal] = React.useState(false);
+    const [newTitle, setNewTitle] = React.useState("");
+    const createVtour = useCreateVtour();
 
 
     if (isLoading) {
@@ -110,106 +50,84 @@ const index = () => {
         );
     }
 
-    if (!vtourData || !vtourData.code || !vtourData.json_data) {
+    if (!userVtours.length) {
         return (
             <View className="flex-1 justify-center items-center bg-background">
-                <CustomText text="No panorama data found." />
+                <CustomText text="No panorama data found in your account." />
             </View>
         );
     }
 
-    const vtour = vtourData?.code;
-    const scenes = vtour?.scenes || {};
+    const handleTourPress = (tourId: string) => {
+        router.push(`/(vtour)/Vtour?id=${tourId}`);
+    }
+
+
+    const handleCreateVtour = async () => {
+        if (!newTitle.trim()) return;
+        try {
+            await createVtour.mutateAsync(newTitle.trim());
+            setNewTitle("");
+            setShowCreateModal(false);
+        } catch (e) {
+            console.warn("Create failed", e);
+        }
+    };
 
     return (
         <SafeAreaView className="flex-1 bg-background" edges={['bottom', 'left', 'right']}>
-            <View className="h-1/2 relative">
-                <CustomFloatingButton icon='plus' onPress={() => addHotspot()} classname="absolute top-4 right-4 z-50" />
-                <Vtour vtour={vtour} BASE_IMG_URL={BASE_IMG_URL} activeSceneId={activeSceneId ? activeSceneId : ""} onSceneChange={(newSceneId) => setActiveSceneId(newSceneId)} />
-                <View className="items-center">
-                    <View className="absolute bottom-4 z-50">
-                        <View className={`bg-primary p-3 rounded-full h-12 justify-center items-center gap-2 flex-row`}>
-                            <Pressable onPress={goPrevScene}>
-                                <AntDesign
-                                    name={"caret-left"}
-                                    size={18}
-                                    color={'#FEFEFE'}
-                                />
-                            </Pressable>
-                            <CustomText text={activeSceneId && scenes[activeSceneId].title ? scenes[activeSceneId].title : `Untitled Scene`} size="normal" variant="light" />
-                            <Pressable onPress={goNextScene}>
-                                <AntDesign
-                                    name={"caret-right"}
-                                    size={18}
-                                    color={'#FEFEFE'}
-                                />
-                            </Pressable>
-
+            {userVtours.map(tour => (
+                <Pressable key={tour.id} className="p-4 border-b border-border" onPress={() => handleTourPress(String(tour.id))}>
+                    <CustomText text={tour.title ?? `Tour ${tour.id}`} size="h3" />
+                    <CustomText text={`ID: ${tour.id}`} isDimmed />
+                </Pressable>
+            ))}
+            <View className="p-4">
+                <CustomButton
+                    text={createVtour.isPending ? "Creating..." : "Create a New Virtual Tour"}
+                    variant="dark"
+                    isCenter
+                    onPress={() => setShowCreateModal(true)}
+                />
+            </View>
+            <Modal
+                transparent
+                animationType="fade"
+                visible={showCreateModal}
+                onRequestClose={() => setShowCreateModal(false)}
+            >
+                <View className="flex-1 bg-black/50 justify-center items-center px-6">
+                    <View className="w-full rounded-2xl bg-white p-5">
+                        <CustomText text="Create Virtual Tour" size="h2" classname="mb-3" />
+                        <InputField
+                            className="border border-border rounded-xl px-4 py-3 text-textPrimary bg-background"
+                            placeholder="Enter tour title"
+                            placeholderTextColor="rgba(1,15,28,0.4)"
+                            value={newTitle}
+                            onChangeText={setNewTitle}
+                        />
+                        <View className="flex-row justify-end gap-3 mt-4">
+                            <TouchableOpacity
+                                className="px-4 py-2 rounded-lg bg-border"
+                                onPress={() => setShowCreateModal(false)}
+                            >
+                                <CustomText text="Cancel" />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                className="px-4 py-2 rounded-lg bg-primary"
+                                onPress={handleCreateVtour}
+                                disabled={createVtour.isPending}
+                            >
+                                <CustomText text={createVtour.isPending ? "Creating..." : "Create"} classname="text-white" />
+                            </TouchableOpacity>
                         </View>
                     </View>
                 </View>
-            </View>
-
-            <ScrollView className="p-4" contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}>
-                <View className="flex-row justify-between mb-4 border-b border-border">
-                    <Pressable onPress={() => setActiveTab("scenes")} className="flex-1">
-                        <CustomText text="Scenes" classname={`${activeTab === "scenes" ? "border-b border-primary transition-all duration-200" : "transition-all duration-200"} pb-2 text-center`} />
-                    </Pressable>
-                    <Pressable onPress={() => setActiveTab("hotspots")} className="flex-1">
-                        <CustomText text="Hotspots" classname={`${activeTab === "hotspots" ? "border-b border-primary transition-all duration-200" : "transition-all duration-200"} pb-2 text-center`} />
-                    </Pressable>
-                </View>
-
-                {activeTab === 'scenes' &&
-                    <SceneEditor tourId={tourId} activeScene={activeSceneId ? scenes[activeSceneId] : null} />
-                }
-                {activeTab === 'hotspots' && (
-                    hotspots.length === 0 ? (
-                        <View className="flex-1 justify-center items-center">
-                            <CustomText text={"No hotspots added yet. Tap the + button on the 360° viewer to add hotspots."} isDimmed={true} classname="text-center" />
-                        </View>
-
-                    ) : (
-                        <HotspotsEditor hotspots={hotspots} apiScenes={scenes} />
-                    )
-                )
-                }
-            </ScrollView>
+            </Modal>
         </SafeAreaView>
     );
 }
 
 export default index;
-
-const styles = StyleSheet.create({
-    container: {
-        borderRadius: 12,
-        marginTop: 8,
-        borderWidth: 1,
-        borderColor: 'rgba(1, 15, 28, 0.12)',
-        shadowColor: 'transparent',
-        elevation: 0,
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0,
-        shadowRadius: 0,
-    },
-    dropdown: {
-        borderColor: 'rgba(1, 15, 28, 0.12)',
-        borderWidth: 1,
-        borderRadius: 9999,
-        padding: 16,
-        fontSize: 14,
-        height: 50,
-        backgroundColor: '#FEFEFE',
-    },
-    placeholderStyle: {
-        fontSize: 14,
-        color: 'rgba(1, 15, 28, 0.40)',
-    },
-    selectedTextStyle: {
-        fontSize: 14,
-        color: 'rgba(1, 15, 28, 1)',
-    },
-});
 
 

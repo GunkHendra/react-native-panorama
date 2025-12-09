@@ -1,4 +1,3 @@
-import CustomButton from '@/components/Button';
 import InputField from '@/components/InputField';
 import CustomText from '@/components/Text';
 import { PlayerHotspot, PlayerScene } from '@/interfaces/vtour';
@@ -6,7 +5,7 @@ import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 
-const HotspotsEditor = ({ hotspots, apiScenes }: { hotspots: PlayerHotspot[], apiScenes: Record<string, PlayerScene> }) => {
+const HotspotsEditor = ({ hotspots, apiScenes, onChangeHotspots }: { hotspots: PlayerHotspot[], apiScenes: Record<string, PlayerScene>, onChangeHotspots: (hotspots: PlayerHotspot[]) => void }) => {
     const [value, setValue] = useState<string | null>(null);
     const [scenes, setScenes] = useState(() => {
         return Object.entries(apiScenes).map(([id, scene]) => ({
@@ -45,7 +44,6 @@ const HotspotsEditor = ({ hotspots, apiScenes }: { hotspots: PlayerHotspot[], ap
                     </View>
                 </View>
             ))}
-            <CustomButton text={"Save"} variant="dark" isCenter={true} onPress={() => console.log('pressed')} />
         </View>
     )
 }
