@@ -24,11 +24,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const index = () => {
     const router = useRouter();
-    const CURRENT_USER_ID = 4818;
+    const USER_ID = 4818;
     const { data: allVtourData, isLoading, isError, error } = useAllVtour();
-    const userVtours = (allVtourData ?? []).filter(v => v.user_id === CURRENT_USER_ID);
+    const userVtours = (allVtourData ?? []).filter(v => v.user_id === USER_ID);
     const [showCreateModal, setShowCreateModal] = React.useState(false);
-    const [newTitle, setNewTitle] = React.useState("");
+    const [newVtourTitle, setNewVtourTitle] = React.useState("");
     const createVtour = useCreateVtour();
 
 
@@ -58,16 +58,19 @@ const index = () => {
         );
     }
 
-    const handleTourPress = (tourId: string) => {
-        router.push(`/(vtour)/Vtour?id=${tourId}`);
+    const handleTourPress = (TOUR_ID: string) => {
+        router.push({
+            pathname: "/(vtour)/Vtour",
+            params: { TOUR_ID: TOUR_ID, USER_ID: USER_ID },
+        });
     }
 
 
     const handleCreateVtour = async () => {
-        if (!newTitle.trim()) return;
+        if (!newVtourTitle.trim()) return;
         try {
-            await createVtour.mutateAsync(newTitle.trim());
-            setNewTitle("");
+            await createVtour.mutateAsync(newVtourTitle.trim());
+            setNewVtourTitle("");
             setShowCreateModal(false);
         } catch (e) {
             console.warn("Create failed", e);
@@ -103,8 +106,8 @@ const index = () => {
                             className="border border-border rounded-xl px-4 py-3 text-textPrimary bg-background"
                             placeholder="Enter tour title"
                             placeholderTextColor="rgba(1,15,28,0.4)"
-                            value={newTitle}
-                            onChangeText={setNewTitle}
+                            value={newVtourTitle}
+                            onChangeText={setNewVtourTitle}
                         />
                         <View className="flex-row justify-end gap-3 mt-4">
                             <TouchableOpacity
