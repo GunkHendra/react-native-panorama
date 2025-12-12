@@ -1,4 +1,4 @@
-import { PlayerConfig } from "@/interfaces/vtour";
+import { PlayerScene } from "@/interfaces/vtour";
 import { generateVtourHTML } from "@/utils/vtourHTMLGenerator";
 import React, { useEffect, useMemo, useRef } from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
@@ -6,15 +6,23 @@ import WebView from "react-native-webview";
 
 const { width } = Dimensions.get("window");
 
-const VtourDisplayer = ({ vtour, BASE_IMG_URL, activeSceneId, onSceneChange }: { vtour: Partial<PlayerConfig>, BASE_IMG_URL: string, activeSceneId: string | null, onSceneChange: (id: string) => void }) => {
+interface VtourDisplayerProps {
+  scenesState: Record<string, PlayerScene>;
+  activeSceneId: string | null;
+  onSceneChange: (id: string) => void;
+}
+
+const VtourDisplayer = ({ scenesState, activeSceneId, onSceneChange }: VtourDisplayerProps) => {
 
   const webViewRef = useRef<WebView>(null);
 
+  // Generate HTML content for WebView
   const htmlContent = useMemo(() => {
-    if (!vtour || !vtour.scenes || !activeSceneId) return "";
-    return generateVtourHTML(vtour, BASE_IMG_URL, activeSceneId);
-  }, [vtour, BASE_IMG_URL, activeSceneId]);
+    if (!scenesState || !activeSceneId) return "";
+    return generateVtourHTML({ scenesState, activeSceneId });
+  }, [scenesState, activeSceneId]);
 
+  // Sync active scene changes from React Native to WebView
   useEffect(() => {
     if (webViewRef.current && activeSceneId) {
       const script = `
