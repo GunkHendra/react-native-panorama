@@ -1,7 +1,7 @@
 import CustomButton from '@/components/Button';
 import InputField from '@/components/InputField';
 import CustomText from '@/components/Text';
-import { SCENE_TYPES } from '@/constants/scene';
+import { SCENE_TYPES } from '@/constants/vtour';
 import { useAddNewImage, useGetFiles } from '@/hooks/useVtour';
 import { PlayerScene } from '@/interfaces/vtour';
 import * as ImagePicker from 'expo-image-picker';
@@ -9,16 +9,27 @@ import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'rea
 import { StyleSheet, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 
-const SceneEditor = forwardRef(({ tourId, userId, activeScene, activeSceneId, onChangeScene, onNewImageUpload }: {
-    tourId: string, userId: string, activeScene: PlayerScene | null, activeSceneId: string | null, onChangeScene: (sceneId: string, patch: Partial<PlayerScene>) => void, onNewImageUpload: (uri: string | null) => void
-}, ref) => {
+interface SceneEditorProps {
+    TOUR_ID: string;
+    USER_ID: string;
+    activeScene: PlayerScene | null;
+    activeSceneId: string | null;
+    isNewScene?: boolean;
+    onChangeScene: (sceneId: string, patch: Partial<PlayerScene>) => void;
+    onNewImageUpload: (uri: string | null) => void;
+}
+
+const SceneEditor = forwardRef(({ TOUR_ID, USER_ID, activeScene, activeSceneId, isNewScene, onChangeScene, onNewImageUpload }: SceneEditorProps, ref) => {
+    // Local states
     const [title, setTitle] = useState("");
     const [type, setType] = useState("");
     const [image, setImage] = useState("");
-    const isNew = !activeSceneId;
+
+    // Api hooks
     const addNewImage = useAddNewImage();
-    const BASE_API_IMAGE_URL = `upload/${userId}/${tourId}/`;
-    const { data: files, refetch: refetchFiles } = useGetFiles(userId);
+    const { data: files, refetch: refetchFiles } = useGetFiles(USER_ID);
+
+    // Initial blank scene
     const blankScene: PlayerScene = {
         title: "",
         titleHtml: false,
@@ -35,10 +46,11 @@ const SceneEditor = forwardRef(({ tourId, userId, activeScene, activeSceneId, on
         zoom: 1,
         saveCamera: true,
     };
+
     const [localScene, setLocalScene] = useState<PlayerScene>(blankScene);
 
     useEffect(() => {
-        if (isNew) {
+        if (isNewScene) {
             setLocalScene(blankScene);
             setTitle("");
             setType("");
@@ -49,7 +61,7 @@ const SceneEditor = forwardRef(({ tourId, userId, activeScene, activeSceneId, on
             setType(activeScene.type ?? "");
             setImage(activeScene.image ?? "");
         }
-    }, [isNew, activeSceneId, activeScene]);
+    }, [isNewScene, activeSceneId, activeScene]);
 
     const updateLocalScene = (patch: Partial<PlayerScene>) => {
         setLocalScene(prev => ({ ...prev, ...patch }));
@@ -76,24 +88,24 @@ const SceneEditor = forwardRef(({ tourId, userId, activeScene, activeSceneId, on
         formData.append('images', { uri: asset.uri, name, type } as any);
 
         try {
-            const res = await addNewImage.mutateAsync({ id: tourId, imageData: formData });
+            const res = await addNewImage.mutateAsync({ id: TOUR_ID, imageData: formData });
             await new Promise(resolve => setTimeout(resolve, 500));
 
             const refreshed = await refetchFiles();
             const freshFiles = refreshed.data;
 
             console.log("File name: ", name);
-            const dir = freshFiles?.find((d: any) => d.name === tourId);
+            const dir = freshFiles?.find((d: any) => d.name === TOUR_ID);
             console.log("Refreshed files: ", dir);
             const file = dir?.files?.find((f: any) => f.name.includes(name));
-            const newImagePath = file ? BASE_API_IMAGE_URL + file.name : null;
+            const newImagePath = file ? `upload/${USER_ID}/${TOUR_ID}/` + file.name : null;
 
 
             if (!newImagePath) return;
 
             setImage(newImagePath);
             onNewImageUpload(newImagePath);
-            if (isNew) updateLocalScene({ image: newImagePath });
+            if (isNewScene) updateLocalScene({ image: newImagePath });
             else if (activeSceneId) onChangeScene(activeSceneId, { image: newImagePath });
         } catch (e) {
             console.warn('Upload failed', e);
@@ -114,7 +126,7 @@ const SceneEditor = forwardRef(({ tourId, userId, activeScene, activeSceneId, on
                     placeholder="Enter Title"
                     onChangeText={(text) => {
                         setTitle(text);
-                        if (isNew) updateLocalScene({ title: text });
+                        if (isNewScene) updateLocalScene({ title: text });
                         else if (activeSceneId) onChangeScene(activeSceneId, { title: text });
                     }}
                 />
@@ -135,7 +147,7 @@ const SceneEditor = forwardRef(({ tourId, userId, activeScene, activeSceneId, on
                     value={type}
                     onChange={(text) => {
                         setType(text.value);
-                        if (isNew) updateLocalScene({ type: text.value });
+                        if (isNewScene) updateLocalScene({ type: text.value });
                         else if (activeSceneId) onChangeScene(activeSceneId, { type: text.value });
                     }}
                 />
