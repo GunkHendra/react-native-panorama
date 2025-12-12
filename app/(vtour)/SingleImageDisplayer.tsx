@@ -1,27 +1,23 @@
 import CustomText from "@/components/Text";
+import { BASE_IMG_URL } from "@/constants/vtour";
 import React, { useMemo } from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
 import WebView from "react-native-webview";
 
 const { width } = Dimensions.get("window");
 
-type Props = {
-    imageUrl: string | null;
-    baseUrl?: string;
-};
+const SingleImageDisplayer = ({ imageUrl }: { imageUrl: string | null }) => {
+  const fullUrl = useMemo(() => {
+    if (!imageUrl) return null;
+    if (imageUrl.startsWith("http")) return imageUrl;
+    const cleanBase = BASE_IMG_URL.endsWith("/") ? BASE_IMG_URL : BASE_IMG_URL + "/";
+    const cleanPath = imageUrl.startsWith("/") ? imageUrl.slice(1) : imageUrl;
+    return cleanBase + cleanPath;
+  }, [imageUrl]);
 
-const SingleImageDisplayer = ({ imageUrl, baseUrl = "https://virtuard.com/uploads/ipanoramaBuilder/" }: Props) => {
-    const fullUrl = useMemo(() => {
-        if (!imageUrl) return null;
-        if (imageUrl.startsWith("http")) return imageUrl;
-        const cleanBase = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
-        const cleanPath = imageUrl.startsWith("/") ? imageUrl.slice(1) : imageUrl;
-        return cleanBase + cleanPath;
-    }, [imageUrl, baseUrl]);
-
-    const htmlContent = useMemo(() => {
-        if (!fullUrl) return "";
-        return `
+  const htmlContent = useMemo(() => {
+    if (!fullUrl) return "";
+    return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -54,39 +50,42 @@ const SingleImageDisplayer = ({ imageUrl, baseUrl = "https://virtuard.com/upload
 </body>
 </html>
     `;
-    }, [fullUrl]);
+  }, [fullUrl]);
 
-    if (!fullUrl) {
-        return (
-            <View style={styles.placeholder}>
-                <CustomText text="Upload an image to preview." isDimmed classname="text-center" />
-            </View>
-        );
-    }
-
+  if (!fullUrl) {
     return (
-        <View style={styles.container}>
-            <WebView
-                originWhitelist={["*"]}
-                source={{ html: htmlContent, baseUrl }}
-                style={styles.viewer}
-                javaScriptEnabled
-                domStorageEnabled
-            />
-        </View>
+      <View style={styles.placeholder}>
+        <CustomText text="Upload an image to preview." isDimmed classname="text-center" />
+      </View>
     );
+  }
+
+  return (
+    <View style={styles.container}>
+      <WebView
+        originWhitelist={["*"]}
+        source={{
+          html: htmlContent,
+          baseUrl: "https://virtuard.com/"
+        }}
+        style={styles.viewer}
+        javaScriptEnabled
+        domStorageEnabled
+      />
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1 },
-    viewer: { width, height: 230 },
-    placeholder: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#f3f4f6",
-        paddingHorizontal: 16,
-    },
+  container: { flex: 1 },
+  viewer: { width, height: 230 },
+  placeholder: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f3f4f6",
+    paddingHorizontal: 16,
+  },
 });
 
 export default SingleImageDisplayer;
