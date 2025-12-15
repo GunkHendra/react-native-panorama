@@ -20,9 +20,8 @@ export type ButtonVariant = 'dark' | 'light' | 'lightPrimary';
 export interface ButtonProps {
     variant?: ButtonVariant;
     classname?: string;
-    text: string;
+    text?: string;
     isCenter?: boolean;
-    hasIcon?: boolean;
     icon?: any;
     onPress?: () => void;
 }

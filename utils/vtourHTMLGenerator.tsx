@@ -1,9 +1,12 @@
-import { PlayerConfig } from "@/interfaces/vtour";
+import { BASE_IMG_URL } from "@/constants/vtour";
+import { PlayerScene } from "@/interfaces/vtour";
 
-export const generateVtourHTML = (apiData: Partial<PlayerConfig>, baseUrl: string, initialSceneId?: string): string => {
+interface generateVtourHTMLProps {
+  scenesState: Record<string, PlayerScene>;
+  activeSceneId?: string;
+}
 
-  const scenesData = apiData.scenes;
-
+export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourHTMLProps) => {
   return `
 <!doctype html>
 <html>
@@ -111,15 +114,15 @@ export const generateVtourHTML = (apiData: Partial<PlayerConfig>, baseUrl: strin
       // BAGIAN DINAMIS (INJECTED DARI REACT NATIVE)
       // ==========================================
       
-      const apiScenes = ${JSON.stringify(scenesData)};
-      const baseUrl = "${baseUrl}";
+      const apiScenes = ${JSON.stringify(scenesState)};
+      const baseUrl = "${BASE_IMG_URL}";
       
       // Kita proses data dari API agar sesuai format Pannellum
       const processedScenes = {};
       let firstSceneId = null;
 
       // Determine starting scene: passed prop OR first key
-      let startScene = "${initialSceneId}";
+      let startScene = "${activeSceneId}";
 
       // Helper untuk menggabungkan URL agar aman dari double slash
       const getFullUrl = (path) => {

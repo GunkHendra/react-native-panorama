@@ -10,7 +10,7 @@ export interface PlayerHotspot {
   yaw: number;
   pitch: number;
   sceneId: string; // The ID of the scene this hotspot links to
-  
+
   // Image properties (Nullable in your JSON)
   imageUrl: string | null;
   imageWidth: number | null;
@@ -36,26 +36,26 @@ export interface PlayerScene {
   cubeTextureCount: string; // e.g., "single"
   sphereWidthSegments: number;
   sphereHeightSegments: number;
-  
+
   image: string; // URL path
-  
+
   // Thumbnails
   thumb: boolean;
   thumbImage?: string; // Optional because scene2 doesn't have it in your JSON, but scene1 does
-  
+
   // Camera positioning
   yaw: number;
   pitch: number;
   zoom: number;
   saveCamera: boolean;
-  
+
   // Title settings
   title: string | null;
   titleHtml: boolean;
   titleSelector: string | null;
-  
+
   // Hotspots Array
-  hotSpots: PlayerHotspot[]; 
+  hotSpots: PlayerHotspot[];
 }
 
 // ==========================================
@@ -63,13 +63,13 @@ export interface PlayerScene {
 // ==========================================
 export interface PlayerConfig {
   theme: string;
-  
+
   // Auto Load/Rotate Settings
   autoLoad: boolean;
   autoRotate: boolean;
   autoRotateSpeed: number;
   autoRotateInactivityDelay: number;
-  
+
   // Mouse/Input Interactions
   mouseWheelPreventDefault: boolean;
   mouseWheelRotate: boolean;
@@ -83,7 +83,7 @@ export interface PlayerConfig {
   grabCoef: number;
   pinchZoom: boolean;
   pinchZoomCoef: number;
-  
+
   // UI Controls Visibility
   showControlsOnHover: boolean;
   showSceneThumbsCtrl: boolean;
@@ -93,7 +93,7 @@ export interface PlayerConfig {
   showZoomCtrl: boolean;
   showFullscreenCtrl: boolean;
   showAutoRotateCtrl: boolean;
-  
+
   // Scene Navigation & Thumbnails
   sceneThumbsVertical: boolean;
   sceneThumbsStatic: boolean;
@@ -101,21 +101,21 @@ export interface PlayerConfig {
   sceneId: string; // The starting scene ID
   sceneFadeDuration: number;
   sceneBackgroundLoad: boolean;
-  
+
   // General UI Elements
   title: boolean;
   compass: boolean;
   keyboardNav: boolean;
   keyboardZoom: boolean;
   mobile: boolean;
-  
+
   // Popover Global Settings
   popover: boolean;
   popoverPlacement: string; // e.g., "top"
   hotSpotBelowPopover: boolean;
   popoverShowTrigger: string; // e.g., "hover"
   popoverHideTrigger: string; // e.g., "leave"
-  
+
   // ⚠️ THE KEY PART: Scenes are a Record (Dictionary), not an Array
   scenes: Record<string, PlayerScene>;
 }
@@ -131,7 +131,7 @@ export interface EditorImageResource {
   url: string | null;
   width?: number | null; // Used in hotspots
   height?: number | null; // Used in hotspots
-  isActive?: boolean;    // Used in global imagePreview
+  isActive?: boolean; // Used in global imagePreview
 }
 
 // ==========================================
@@ -142,7 +142,7 @@ export interface EditorHotspotConfig {
   yaw: number;
   pitch: number;
   sceneId: string;
-  
+
   // Visuals
   image: EditorImageResource;
   custom: boolean;
@@ -167,7 +167,7 @@ export interface EditorHotspotConfig {
 
 // ⚠️ WRAPPER: The Editor wraps the config with UI state
 export interface EditorHotspotWrapper {
-  id: string;        // "Hotspot 1"
+  id: string; // "Hotspot 1"
   isSelected: boolean;
   isVisible: boolean;
   config: EditorHotspotConfig;
@@ -180,7 +180,7 @@ export interface EditorSceneConfig {
   title: string | null;
   titleHtml: boolean;
   titleSelector: string | null;
-  
+
   type: string; // "sphere"
   cubeTextureCount: string; // "single"
   sphereWidthSegments: number;
@@ -202,7 +202,7 @@ export interface EditorSceneConfig {
   zoom: number;
   compassNorthOffset: number | null;
   saveCamera: boolean;
-  
+
   // Limits (Not present in Player config usually)
   pitchLimits: boolean;
   pitchLimitUp: number;
@@ -220,9 +220,9 @@ export interface EditorSceneWrapper {
   id: string; // "Scene 1"
   isSelected: boolean;
   isVisible: boolean;
-  yaw: number;   // Preview yaw in editor
+  yaw: number; // Preview yaw in editor
   pitch: number; // Preview pitch in editor
-  zoom: number;  // Preview zoom in editor
+  zoom: number; // Preview zoom in editor
   config: EditorSceneConfig;
 }
 
@@ -261,7 +261,10 @@ export interface EditorTabPanel {
 
 // Global overrides (mostly booleans in your JSON)
 // Using Record<string, any> is safest here as it duplicates the config keys
-export type EditorGlobalOverrides = Record<string, boolean | string | number | null>;
+export type EditorGlobalOverrides = Record<
+  string,
+  boolean | string | number | null
+>;
 
 // ==========================================
 // 5. Main Editor Configuration (The Root)
@@ -270,13 +273,13 @@ export interface EditorConfigData {
   // Appearance
   theme: string;
   imagePreview: EditorImageResource;
-  
+
   // Auto Load/Rotate
   autoLoad: boolean;
   autoRotate: boolean;
   autoRotateSpeed: number;
   autoRotateInactivityDelay: number;
-  
+
   // Input Settings
   mouseWheelPreventDefault: boolean;
   mouseWheelRotate: boolean;
@@ -290,7 +293,7 @@ export interface EditorConfigData {
   grabCoef: number;
   pinchZoom: boolean;
   pinchZoomCoef: number;
-  
+
   // UI Controls
   showControlsOnHover: boolean;
   showSceneThumbsCtrl: boolean;
@@ -327,10 +330,10 @@ export interface EditorConfigData {
   sceneFadeDuration: number;
   sceneBackgroundLoad: boolean;
   sceneId: string | null; // Currently selected scene ID in editor
-  
+
   // ⚠️ THE KEY PART: Scenes are an Array of Wrappers
   scenes: EditorSceneWrapper[];
-  
+
   // Editor Specifics
   foldedSections: EditorFoldedSections;
   tabPanel: EditorTabPanel;
@@ -344,7 +347,6 @@ export interface EditorConfig {
   config: EditorConfigData;
 }
 
-
 // ==========================================
 // LAYER 2: The API Response (Network Layer)
 // ==========================================
@@ -354,12 +356,12 @@ export interface VTourApiResponse<T> {
 }
 
 export interface DirectoryItem {
-   type: "directory";
-   name: string;
-   files: {
-      type: "file";
-      name: string;
-   }[];
+  type: "directory";
+  name: string;
+  files: {
+    type: "file";
+    name: string;
+  }[];
 }
 
 // ==========================================
@@ -372,7 +374,7 @@ export interface VTour {
   title: string;
   thumb: string;
   code: Partial<PlayerConfig>; // Parsed from 'code'
-  json_data: Partial<EditorConfig>;   // Parsed from 'json_data'
+  json_data: Partial<EditorConfig>; // Parsed from 'json_data'
 }
 
 export interface VTourStringified {
@@ -380,6 +382,10 @@ export interface VTourStringified {
   user_id: number;
   title: string;
   thumb: string;
-  code: string;       // Stringified JSON
-  json_data: string;  // Stringified JSON
+  code: string; // Stringified JSON
+  json_data: string; // Stringified JSON
+}
+export interface SceneOption {
+  label: string;
+  value: "sphere" | "cube" | "cylinder";
 }
