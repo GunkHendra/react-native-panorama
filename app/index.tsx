@@ -4,7 +4,7 @@ import CustomText from "@/components/Text";
 import { useAllVtour, useCreateVtour } from "@/hooks/useVtour";
 import { useRouter } from "expo-router";
 import React from "react";
-import { ActivityIndicator, Modal, Pressable, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Modal, Pressable, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 /**
@@ -79,12 +79,14 @@ const index = () => {
 
     return (
         <SafeAreaView className="flex-1 bg-background" edges={['bottom', 'left', 'right']}>
-            {userVtours.map(tour => (
-                <Pressable key={tour.id} className="p-4 border-b border-border" onPress={() => handleTourPress(String(tour.id))}>
-                    <CustomText text={tour.title ?? `Tour ${tour.id}`} size="h3" />
-                    <CustomText text={`ID: ${tour.id}`} isDimmed />
-                </Pressable>
-            ))}
+            <ScrollView>
+                {userVtours.map(tour => (
+                    <Pressable key={tour.id} className="p-4 border-b border-border" onPress={() => handleTourPress(String(tour.id))}>
+                        <CustomText text={tour.title ?? `Tour ${tour.id}`} size="h3" />
+                        <CustomText text={`ID: ${tour.id}`} isDimmed />
+                    </Pressable>
+                ))}
+            </ScrollView>
             <View className="p-4">
                 <CustomButton
                     text={createVtour.isPending ? "Creating..." : "Create a New Virtual Tour"}
