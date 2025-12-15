@@ -8,12 +8,13 @@ const { width } = Dimensions.get("window");
 
 interface VtourDisplayerProps {
   scenesState: Record<string, PlayerScene>;
-  activeSceneId: string | null;
+  activeSceneId: string;
   onSceneChange: (id: string) => void;
 }
 
 const VtourDisplayer = ({ scenesState, activeSceneId, onSceneChange }: VtourDisplayerProps) => {
-
+  // console.log("Generating VtourDisplayer with activeSceneId:", activeSceneId);
+  // console.log("Scenes State:", scenesState);
   const webViewRef = useRef<WebView>(null);
 
   // Generate HTML content for WebView
@@ -49,6 +50,16 @@ const VtourDisplayer = ({ scenesState, activeSceneId, onSceneChange }: VtourDisp
       console.error("JSON Parse error", e);
     }
   };
+
+  if (!activeSceneId || !scenesState[activeSceneId] || !scenesState[activeSceneId].image || !htmlContent) {
+    return <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View>
+        <View style={{ width: 100, height: 100, borderRadius: 12, backgroundColor: '#ddd', justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: '#bbb' }} />
+        </View>
+      </View>
+    </View>;
+  }
 
   return (
     <View style={styles.container}>

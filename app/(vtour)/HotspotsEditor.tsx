@@ -1,18 +1,23 @@
 import InputField from '@/components/InputField';
 import CustomText from '@/components/Text';
 import { PlayerHotspot, PlayerScene } from '@/interfaces/vtour';
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 
-const HotspotsEditor = ({ hotspots, apiScenes, onChangeHotspots }: { hotspots: PlayerHotspot[], apiScenes: Record<string, PlayerScene>, onChangeHotspots: (hotspots: PlayerHotspot[]) => void }) => {
-    const [value, setValue] = useState<string | null>(null);
-    const [scenes, setScenes] = useState(() => {
-        return Object.entries(apiScenes).map(([id, scene]) => ({
+const HotspotsEditor = ({ hotspots, scenes, onChangeHotspots }: { hotspots: PlayerHotspot[], scenes: Record<string, PlayerScene>, onChangeHotspots: (hotspots: PlayerHotspot[]) => void }) => {
+
+    const scenesArray = useMemo(() => {
+        return Object.entries(scenes).map(([id, scene]) => ({
             label: scene?.title ?? id,
             value: id,
         }));
-    });
+    }, [scenes]);
+
+    const handleHotspotsChange = (index: number, patch: Partial<PlayerHotspot>) => {
+        const updatedHotspots = hotspots.map((hotspot, i) => i === index ? { ...hotspot, ...patch } : hotspot);
+        onChangeHotspots(updatedHotspots);
+    };
 
     return (
         <View className="flex-1">
@@ -21,27 +26,27 @@ const HotspotsEditor = ({ hotspots, apiScenes, onChangeHotspots }: { hotspots: P
                     <CustomText text={hotspot.title} size="h3" classname="mb-2 font-semibold" />
                     <View className="gap-2 mb-4">
                         <CustomText text="Hotspot Title" />
-                        <InputField placeholder="Enter Title" />
+                        <InputField value={hotspot.title} placeholder="Enter Title" onChangeText={(text) => handleHotspotsChange(index, { ...hotspot, title: text })} />
                         <Dropdown
                             style={styles.dropdown}
                             containerStyle={styles.container}
                             placeholderStyle={styles.placeholderStyle}
                             selectedTextStyle={styles.selectedTextStyle}
                             itemTextStyle={styles.selectedTextStyle}
-                            data={scenes}
+                            data={scenesArray}
                             labelField="label"
                             valueField="value"
                             placeholder='Go to the Scene'
                             value={hotspot.sceneId}
                             onChange={(item: any) => {
-                                setValue(item.value);
+                                handleHotspotsChange(index, { ...hotspot, sceneId: item.value })
                             }}
                         />
                     </View>
-                    <View className="gap-2 mb-4">
+                    {/* <View className="gap-2 mb-4">
                         <CustomText text="URL" />
                         <InputField placeholder="Enter URL" />
-                    </View>
+                    </View> */}
                 </View>
             ))}
         </View>

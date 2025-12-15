@@ -40,9 +40,11 @@ const SceneEditor = ({ TOUR_ID, USER_ID, activeScene, activeSceneId, onChangeSce
         //     setImage("");
         // } else if (activeScene) {
         // setLocalScene(activeScene);
-        setTitle(activeScene.title || "");
-        setType(activeScene.type || "");
-        setImage(activeScene.image || "");
+        if (activeScene) {
+            setTitle(activeScene.title || "");
+            setType(activeScene.type || "");
+            setImage(activeScene.image || "");
+        }
         // }
     }, [activeSceneId, activeScene]);
 
@@ -145,7 +147,6 @@ const SceneEditor = ({ TOUR_ID, USER_ID, activeScene, activeSceneId, onChangeSce
                     text={addNewImage.isPending ? 'Uploading...' : 'Upload a file'}
                     variant="light"
                     onPress={handlePickImage}
-                    hasIcon
                     icon="upload"
                 />
                 {image ? (

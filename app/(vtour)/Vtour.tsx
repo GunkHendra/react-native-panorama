@@ -1,16 +1,15 @@
 import CustomButton, { CustomFloatingButton } from "@/components/Button";
 import InputField from "@/components/InputField";
 import CustomText from "@/components/Text";
+import { defaultBlankVtourScene } from "@/constants/vtour";
 import { useUpdateVtour, useVtour } from "@/hooks/useVtour";
 import { PlayerHotspot, PlayerScene, VTour } from "@/interfaces/vtour";
 import { AntDesign } from '@expo/vector-icons';
 import { useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import HotspotsEditor from "./HotspotsEditor";
 import SceneEditor from "./SceneEditor";
-import SingleImageDisplayer from "./SingleImageDisplayer";
 import VtourDisplayer from "./VtourDisplayer";
 
 /**
@@ -28,73 +27,106 @@ import VtourDisplayer from "./VtourDisplayer";
  * - Each hotspot includes title, target scene, and URL inputs
  */
 
-const Vtour = () => {
-    const { id } = useLocalSearchParams<{ id?: string | string[] }>();
-    const tourId = Array.isArray(id) ? id[0] : id;
-    const userId = "4818";
-    const BASE_IMG_URL = "https://virtuard.com/uploads/ipanoramaBuilder/";
-    const { data: vtourData, isLoading, isError, error } = useVtour(tourId || "");
+type VtourParams = {
+    TOUR_ID: string;
+    USER_ID: string;
+};
 
+const Vtour = () => {
+    // Fetch vtour data
+    const params = useLocalSearchParams<VtourParams>();
+    const { TOUR_ID, USER_ID } = params;
+    const { data: vtourData, isLoading, isError, error } = useVtour(TOUR_ID);
+    const [vtourTitle, setVtourTitle] = useState("");
+
+    // Local menu states
     const [activeTab, setActiveTab] = useState<'scenes' | 'hotspots'>('scenes');
-    const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
-    const [title, setTitle] = useState("");
+    // const [imagePreview, setImagePreview] = useState<string | null>(null);
+    // const [isEmptyScene, setIsEmptyScene] = useState(false);
+    const [hasMoreScenes, setHasMoreScenes] = useState(false);
+
+    // Scene and hotspots that is active in the editor
+    const [activeSceneId, setActiveSceneId] = useState("");
+    const [activeHotspots, setActiveHotspots] = useState<PlayerHotspot[]>([]);
+
+    // Vtour scenes state (single source of truth for scenes data)
     const [scenesState, setScenesState] = useState<Record<string, PlayerScene>>({});
-    const [hotspots, setHotspots] = useState<PlayerHotspot[]>([]);
+
+    // Api hook
     const updateVtour = useUpdateVtour();
 
-    const sceneIds = Object.keys(vtourData?.code?.scenes || {});
-    const vtour = vtourData?.code;
-    const scenes = vtour?.scenes || {};
-    const sceneEditorRef = React.useRef<any>(null);
-    const isNewScene = !activeSceneId;
-    const hasExistingScenes = sceneIds.length > 0;
-    const [newImagePreview, setNewImagePreview] = useState<string | null>(null);
+    // Scene IDs for navigation (since scenesState is a dictionary, so we need an array of keys)
+    const sceneIds = useMemo(() => {
+        return Object.keys(scenesState);
+    }, [scenesState]);
 
-    React.useEffect(() => {
+    // console.log("VTour Data outside useeffect:", vtourData);
+
+    useEffect(() => {
         if (!vtourData) return;
+        setVtourTitle(vtourData.title || "");
 
-        setTitle(vtourData?.title ?? "");
-
-        if (activeSceneId) {
-            setNewImagePreview(null);
+        if (!vtourData.code || !vtourData.code.scenes) {
+            setScenesState({
+                scene_1: defaultBlankVtourScene,
+            });
+            return;
+        } else {
+            setScenesState(vtourData.code.scenes);
         }
-
-        if (!vtourData?.code?.scenes) return;
-        if (sceneIds.length === 0) return;
-
-        setScenesState(vtourData.code.scenes);
-
-        const firstScene = sceneIds[0];
-        setActiveSceneId(firstScene);
-
-
-        const initialHotspots = vtourData.code.scenes[firstScene]?.hotSpots || [];
-        setHotspots(initialHotspots);
     }, [vtourData]);
 
-    const addHotspot = () => {
-        const newHotspot: PlayerHotspot = {
-            title: "Hotspot " + (hotspots.length + 1),
-            yaw: 0,
-            pitch: 0,
-            sceneId: "",
-            imageUrl: null,
-            imageWidth: null,
-            imageHeight: null,
-            link: null,
-            linkNewWindow: false,
-            popoverHtml: true,
-            popoverContent: null,
-            popoverSelector: null,
-            popoverLazyload: true,
-            popoverShow: false,
-        };
-        setHotspots([...hotspots, newHotspot]);
-    }
+    useEffect(() => {
+        if (sceneIds.length === 0) return;
 
-    const handleNewImagePreview = (uri: string | null) => {
-        setNewImagePreview(uri);
-    }
+        if (!activeSceneId) {
+            const firstScene = sceneIds[0];
+            setActiveSceneId(firstScene);
+            const firstHotspots = scenesState[activeSceneId]?.hotSpots || [];
+            setActiveHotspots(firstHotspots);
+        }
+
+        if (sceneIds.length > 1) {
+            setHasMoreScenes(true);
+        } else {
+            setHasMoreScenes(false);
+        }
+    }, [sceneIds]);
+
+    // useEffect(() => {
+    //     if (!scenesState[activeSceneId].image) {
+    //         setImagePreview(null);
+    //     }
+    // }, [activeSceneId]);
+
+    // const addHotspot = () => {
+    //     const newHotspot: PlayerHotspot = {
+    //         title: "Hotspot " + (hotspots.length + 1),
+    //         yaw: 0,
+    //         pitch: 0,
+    //         sceneId: "",
+    //         imageUrl: null,
+    //         imageWidth: null,
+    //         imageHeight: null,
+    //         link: null,
+    //         linkNewWindow: false,
+    //         popoverHtml: true,
+    //         popoverContent: null,
+    //         popoverSelector: null,
+    //         popoverLazyload: true,
+    //         popoverShow: false,
+    //     };
+    //     setHotspots([...hotspots, newHotspot]);
+    // }
+
+    const handleAddNewScene = () => {
+        const newId = `scene_${Object.keys(scenesState).length + 1}`;
+        setScenesState((prev) => ({
+            ...prev,
+            [newId]: defaultBlankVtourScene,
+        }));
+        setActiveSceneId(newId);
+    };
 
     const handleSceneChange = (sceneId: string, patch: Partial<PlayerScene>) => {
         setScenesState((prev) => ({
@@ -103,50 +135,41 @@ const Vtour = () => {
         }));
     };
 
-    const handleHotspotsChange = (nextHotspots: PlayerHotspot[]) => {
-        setHotspots(nextHotspots);
-        if (activeSceneId) {
-            setScenesState((prev) => ({
-                ...prev,
-                [activeSceneId]: { ...prev[activeSceneId], hotSpots: nextHotspots },
-            }));
-        }
-    };
+    // const handleHotspotsChange = (newHotspots: PlayerHotspot[]) => {
+    //     setHotspots(newHotspots);
+    //     if (activeSceneId) {
+    //         setScenesState((prev) => ({
+    //             ...prev,
+    //             [activeSceneId]: { ...prev[activeSceneId], hotSpots: newHotspots },
+    //         }));
+    //     }
+    // };
 
     const handleSave = async () => {
-        if (!tourId) return;
-        const editor = sceneEditorRef.current;
-        if (!editor) return;
-        const newSceneData = editor.getLocalScene();
-        const isNewScene = editor.isNew;
-        let finalScenes = { ...scenesState };
-        if (isNewScene) {
-            const newId = `scene_${Object.keys(scenesState).length + 1}`;
-            finalScenes[newId] = newSceneData;
-            // set state for UI
-            setScenesState(finalScenes);
-            setActiveSceneId(newId);
-        }
         const payload: Partial<VTour> = {
-            title,
+            title: vtourTitle,
             code: {
                 ...vtourData?.code,
-                scenes: finalScenes,
+                scenes: { ...scenesState },
             },
         };
-        await updateVtour.mutateAsync({ id: tourId, data: payload });
+        await updateVtour.mutateAsync({ id: TOUR_ID, data: payload });
     };
 
 
-    const currentIndex = sceneIds.indexOf(activeSceneId ?? sceneIds[0]);
+    const currentIndex = sceneIds.indexOf(activeSceneId || sceneIds[0]);
     const goNextScene = () => {
         const nextIndex = (currentIndex + 1) % sceneIds.length;
-        setActiveSceneId(sceneIds[nextIndex]);
+        const nextSceneId = sceneIds[nextIndex];
+        setActiveSceneId(nextSceneId);
+        setActiveHotspots(scenesState[nextSceneId]?.hotSpots || []);
     };
 
     const goPrevScene = () => {
         const prevIndex = (currentIndex - 1 + sceneIds.length) % sceneIds.length;
-        setActiveSceneId(sceneIds[prevIndex]);
+        const prevSceneId = sceneIds[prevIndex];
+        setActiveSceneId(prevSceneId);
+        setActiveHotspots(scenesState[prevSceneId]?.hotSpots || []);
     };
 
     if (isLoading) {
@@ -179,22 +202,30 @@ const Vtour = () => {
         <SafeAreaView className="flex-1 bg-background" edges={['bottom', 'left', 'right']}>
             <View className="p-4">
                 <InputField
-                    value={title}
+                    value={vtourTitle}
                     placeholder="Enter Title"
-                    onChangeText={setTitle}
+                    onChangeText={setVtourTitle}
                 />
             </View>
             <View className={`h-1/2 relative`}>
-                <CustomFloatingButton icon='plus' onPress={() => addHotspot()} classname="absolute top-4 right-4 z-50" />
-                {isNewScene ? (
-                    <SingleImageDisplayer imageUrl={newImagePreview ?? null} baseUrl={BASE_IMG_URL} />
-                ) : (
-                    <VtourDisplayer vtour={vtour ?? {}} BASE_IMG_URL={BASE_IMG_URL} activeSceneId={activeSceneId ?? null} onSceneChange={(newSceneId) => setActiveSceneId(newSceneId)} />
-                )}
-                {hasExistingScenes &&
-                    <View className="items-center">
-                        <View className="absolute bottom-4 z-50">
-                            <View className={`bg-primary p-3 rounded-full h-12 justify-center items-center gap-2 flex-row`}>
+                {activeTab === 'scenes' &&
+                    <View className="absolute top-4 right-4 z-50">
+                        <CustomFloatingButton text='Add New Scene' icon='plus' onPress={handleAddNewScene} />
+                    </View>
+                }
+                <VtourDisplayer
+                    scenesState={scenesState}
+                    activeSceneId={activeSceneId}
+                    onSceneChange={(newSceneId) => {
+                        setActiveSceneId(newSceneId);
+                        setActiveHotspots(scenesState[newSceneId]?.hotSpots || []);
+                    }}
+                />
+
+                <View className="items-center">
+                    <View className="absolute bottom-4 z-50">
+                        <View className={`bg-primary py-3 rounded-full h-12 justify-center items-center gap-2 ${!hasMoreScenes ? "px-6" : "px-3"} flex-row`}>
+                            {hasMoreScenes &&
                                 <Pressable onPress={goPrevScene}>
                                     <AntDesign
                                         name={"caret-left"}
@@ -202,7 +233,9 @@ const Vtour = () => {
                                         color={'#FEFEFE'}
                                     />
                                 </Pressable>
-                                <CustomText text={activeSceneId && activeSceneId !== "__NEW__" ? scenes[activeSceneId].title ? scenes[activeSceneId].title : `Untitled Scene` : `New Empty Scene`} size="normal" variant="light" />
+                            }
+                            <CustomText text={activeSceneId ? scenesState[activeSceneId].title ? scenesState[activeSceneId].title : `Untitled Scene` : `New Empty Scene`} size="normal" variant="light" />
+                            {hasMoreScenes &&
                                 <Pressable onPress={goNextScene}>
                                     <AntDesign
                                         name={"caret-right"}
@@ -210,11 +243,10 @@ const Vtour = () => {
                                         color={'#FEFEFE'}
                                     />
                                 </Pressable>
-
-                            </View>
+                            }
                         </View>
                     </View>
-                }
+                </View>
             </View>
 
             <ScrollView className="p-4" contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}>
@@ -228,26 +260,28 @@ const Vtour = () => {
                 </View>
 
                 {activeTab === 'scenes' &&
-                    <SceneEditor ref={sceneEditorRef} tourId={tourId as string} userId={userId} activeScene={activeSceneId ? scenes[activeSceneId] : null} activeSceneId={activeSceneId} onChangeScene={handleSceneChange} onNewImageUpload={handleNewImagePreview} />
+                    <SceneEditor TOUR_ID={TOUR_ID} USER_ID={USER_ID} activeScene={scenesState[activeSceneId]} activeSceneId={activeSceneId} onChangeScene={handleSceneChange} />
                 }
-                {activeTab === 'hotspots' && (
-                    hotspots.length === 0 ? (
+                {/* {activeTab === 'hotspots' && (
+                    activeHotspots.length === 0 ? (
                         <View className="flex-1 justify-center items-center">
                             <CustomText text={"No hotspots added yet. Tap the + button on the 360° viewer to add hotspots."} isDimmed={true} classname="text-center" />
                         </View>
 
                     ) : (
-                        <HotspotsEditor hotspots={hotspots} apiScenes={scenes} onChangeHotspots={handleHotspotsChange} />
+                        <HotspotsEditor hotspots={hotspots} scenes={scenesState} onChangeHotspots={handleHotspotsChange} />
                     )
                 )
-                }
+                } */}
+            </ScrollView>
+            <View className="p-4 bg-background">
                 <CustomButton
                     text={updateVtour.isPending ? "Saving..." : "Save"}
                     variant="dark"
                     isCenter
                     onPress={handleSave}
                 />
-            </ScrollView>
+            </View>
         </SafeAreaView>
     );
 }
