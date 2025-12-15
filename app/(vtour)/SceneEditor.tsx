@@ -5,21 +5,22 @@ import { SCENE_TYPES } from '@/constants/vtour';
 import { useAddNewImage, useGetFiles } from '@/hooks/useVtour';
 import { PlayerScene } from '@/interfaces/vtour';
 import * as ImagePicker from 'expo-image-picker';
-import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 
 interface SceneEditorProps {
     TOUR_ID: string;
     USER_ID: string;
-    activeScene: PlayerScene | null;
-    activeSceneId: string | null;
-    isNewScene?: boolean;
+    activeScene: PlayerScene;
+    activeSceneId: string;
+    // isEmptyScene?: boolean;
     onChangeScene: (sceneId: string, patch: Partial<PlayerScene>) => void;
-    onNewImageUpload: (uri: string | null) => void;
+    // onNewImageUpload: (uri: string | null) => void;
 }
 
-const SceneEditor = forwardRef(({ TOUR_ID, USER_ID, activeScene, activeSceneId, isNewScene, onChangeScene, onNewImageUpload }: SceneEditorProps, ref) => {
+// const SceneEditor = forwardRef(({ TOUR_ID, USER_ID, activeScene, activeSceneId, onChangeScene }: SceneEditorProps, ref) => {
+const SceneEditor = ({ TOUR_ID, USER_ID, activeScene, activeSceneId, onChangeScene }: SceneEditorProps) => {
     // Local states
     const [title, setTitle] = useState("");
     const [type, setType] = useState("");
@@ -29,50 +30,32 @@ const SceneEditor = forwardRef(({ TOUR_ID, USER_ID, activeScene, activeSceneId, 
     const addNewImage = useAddNewImage();
     const { data: files, refetch: refetchFiles } = useGetFiles(USER_ID);
 
-    // Initial blank scene
-    const blankScene: PlayerScene = {
-        title: "",
-        titleHtml: false,
-        titleSelector: null,
-        type: "",
-        image: "",
-        hotSpots: [],
-        cubeTextureCount: "single",
-        sphereWidthSegments: 100,
-        sphereHeightSegments: 40,
-        thumb: false,
-        yaw: 0,
-        pitch: 0,
-        zoom: 1,
-        saveCamera: true,
-    };
-
-    const [localScene, setLocalScene] = useState<PlayerScene>(blankScene);
+    // const [localScene, setLocalScene] = useState<PlayerScene>(defaultBlankVtourScene);
 
     useEffect(() => {
-        if (isNewScene) {
-            setLocalScene(blankScene);
-            setTitle("");
-            setType("");
-            setImage("");
-        } else if (activeScene) {
-            setLocalScene(activeScene);
-            setTitle(activeScene.title ?? "");
-            setType(activeScene.type ?? "");
-            setImage(activeScene.image ?? "");
-        }
-    }, [isNewScene, activeSceneId, activeScene]);
+        // if (isEmptyScene) {
+        //     setLocalScene(defaultBlankVtourScene);
+        //     setTitle("");
+        //     setType("");
+        //     setImage("");
+        // } else if (activeScene) {
+        // setLocalScene(activeScene);
+        setTitle(activeScene.title || "");
+        setType(activeScene.type || "");
+        setImage(activeScene.image || "");
+        // }
+    }, [activeSceneId, activeScene]);
 
-    const updateLocalScene = (patch: Partial<PlayerScene>) => {
-        setLocalScene(prev => ({ ...prev, ...patch }));
-    };
+    // const updateLocalScene = (patch: Partial<PlayerScene>) => {
+    //     setLocalScene(prev => ({ ...prev, ...patch }));
+    // };
 
     const handlePickImage = async () => {
         const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (!perm.granted) return;
 
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: 'images',
             quality: 0.8,
             allowsMultipleSelection: false,
         });
@@ -88,7 +71,7 @@ const SceneEditor = forwardRef(({ TOUR_ID, USER_ID, activeScene, activeSceneId, 
         formData.append('images', { uri: asset.uri, name, type } as any);
 
         try {
-            const res = await addNewImage.mutateAsync({ id: TOUR_ID, imageData: formData });
+            await addNewImage.mutateAsync({ id: TOUR_ID, imageData: formData });
             await new Promise(resolve => setTimeout(resolve, 500));
 
             const refreshed = await refetchFiles();
@@ -104,18 +87,19 @@ const SceneEditor = forwardRef(({ TOUR_ID, USER_ID, activeScene, activeSceneId, 
             if (!newImagePath) return;
 
             setImage(newImagePath);
-            onNewImageUpload(newImagePath);
-            if (isNewScene) updateLocalScene({ image: newImagePath });
-            else if (activeSceneId) onChangeScene(activeSceneId, { image: newImagePath });
+            onChangeScene(activeSceneId, { image: newImagePath });
+            // onNewImageUpload(newImagePath);
+            // if (isNewScene) updateLocalScene({ image: newImagePath });
+            // else if (activeSceneId) onChangeScene(activeSceneId, { image: newImagePath });
         } catch (e) {
             console.warn('Upload failed', e);
         }
     };
 
-    useImperativeHandle(ref, () => ({
-        getLocalScene: () => localScene,
-        isNew: !activeSceneId
-    }));
+    // useImperativeHandle(ref, () => ({
+    //     getLocalScene: () => localScene,
+    //     isNew: !activeSceneId
+    // }));
 
     return (
         <View>
@@ -126,8 +110,9 @@ const SceneEditor = forwardRef(({ TOUR_ID, USER_ID, activeScene, activeSceneId, 
                     placeholder="Enter Title"
                     onChangeText={(text) => {
                         setTitle(text);
-                        if (isNewScene) updateLocalScene({ title: text });
-                        else if (activeSceneId) onChangeScene(activeSceneId, { title: text });
+                        // if (isNewScene) updateLocalScene({ title: text });
+                        // else if (activeSceneId) onChangeScene(activeSceneId, { title: text });
+                        onChangeScene(activeSceneId, { title: text });
                     }}
                 />
             </View>
@@ -147,8 +132,9 @@ const SceneEditor = forwardRef(({ TOUR_ID, USER_ID, activeScene, activeSceneId, 
                     value={type}
                     onChange={(text) => {
                         setType(text.value);
-                        if (isNewScene) updateLocalScene({ type: text.value });
-                        else if (activeSceneId) onChangeScene(activeSceneId, { type: text.value });
+                        // if (isNewScene) updateLocalScene({ type: text.value });
+                        // else if (activeSceneId) onChangeScene(activeSceneId, { type: text.value });
+                        onChangeScene(activeSceneId, { type: text.value });
                     }}
                 />
             </View>
@@ -168,7 +154,7 @@ const SceneEditor = forwardRef(({ TOUR_ID, USER_ID, activeScene, activeSceneId, 
             </View>
         </View>
     )
-});
+}
 
 export default SceneEditor
 
