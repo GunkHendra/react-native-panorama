@@ -1,4 +1,4 @@
-import { PlayerScene, SceneOption } from "@/interfaces/vtour";
+import { PlayerHotspot, PlayerScene, SceneOption } from "@/interfaces/vtour";
 
 export const BASE_IMG_URL = "https://virtuard.com/uploads/ipanoramaBuilder/";
 
@@ -24,3 +24,20 @@ export const defaultBlankVtourScene: PlayerScene = {
   zoom: 1,
   saveCamera: true,
 };
+
+export const defaultBlankVtourHotspot = (index: number): PlayerHotspot => ({
+  title: "Hotspot " + (index + 1),
+  yaw: 0,
+  pitch: 0,
+  sceneId: "",
+  imageUrl: null,
+  imageWidth: null,
+  imageHeight: null,
+  link: null,
+  linkNewWindow: false,
+  popoverHtml: true,
+  popoverContent: null,
+  popoverSelector: null,
+  popoverLazyload: true,
+  popoverShow: false,
+});
