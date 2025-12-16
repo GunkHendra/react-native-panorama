@@ -15,7 +15,8 @@ interface SceneEditorProps {
     activeScene: PlayerScene;
     activeSceneId: string;
     // isEmptyScene?: boolean;
-    onChangeScene: (sceneId: string, patch: Partial<PlayerScene>) => void;
+    // onChangeScene: (sceneId: string, patch: Partial<PlayerScene>) => void;
+    onChangeScene: (patch: Partial<PlayerScene>) => void;
     // onNewImageUpload: (uri: string | null) => void;
 }
 
@@ -89,7 +90,8 @@ const SceneEditor = ({ TOUR_ID, USER_ID, activeScene, activeSceneId, onChangeSce
             if (!newImagePath) return;
 
             setImage(newImagePath);
-            onChangeScene(activeSceneId, { image: newImagePath });
+            // onChangeScene(activeSceneId, { image: newImagePath });
+            onChangeScene({ image: newImagePath });
             // onNewImageUpload(newImagePath);
             // if (isNewScene) updateLocalScene({ image: newImagePath });
             // else if (activeSceneId) onChangeScene(activeSceneId, { image: newImagePath });
@@ -114,7 +116,8 @@ const SceneEditor = ({ TOUR_ID, USER_ID, activeScene, activeSceneId, onChangeSce
                         setTitle(text);
                         // if (isNewScene) updateLocalScene({ title: text });
                         // else if (activeSceneId) onChangeScene(activeSceneId, { title: text });
-                        onChangeScene(activeSceneId, { title: text });
+                        // onChangeScene(activeSceneId, { title: text });
+                        onChangeScene({ title: text });
                     }}
                 />
             </View>
@@ -136,7 +139,8 @@ const SceneEditor = ({ TOUR_ID, USER_ID, activeScene, activeSceneId, onChangeSce
                         setType(text.value);
                         // if (isNewScene) updateLocalScene({ type: text.value });
                         // else if (activeSceneId) onChangeScene(activeSceneId, { type: text.value });
-                        onChangeScene(activeSceneId, { type: text.value });
+                        // onChangeScene(activeSceneId, { type: text.value });
+                        onChangeScene({ type: text.value });
                     }}
                 />
             </View>
