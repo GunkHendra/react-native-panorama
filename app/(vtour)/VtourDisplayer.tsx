@@ -10,16 +10,16 @@ interface VtourDisplayerProps {
   scenesState: Record<string, PlayerScene>;
   activeSceneId: string;
   onSceneChange: (id: string) => void;
+  hotspotPickingState?: boolean;
+  onAddNewHotspot: (yaw: number, pitch: number) => void;
 }
 
-const VtourDisplayer = ({ scenesState, activeSceneId, onSceneChange }: VtourDisplayerProps) => {
-  // console.log("Generating VtourDisplayer with activeSceneId:", activeSceneId);
-  // console.log("Scenes State:", scenesState);
+const VtourDisplayer = ({ scenesState, activeSceneId, onSceneChange, hotspotPickingState, onAddNewHotspot }: VtourDisplayerProps) => {
   const webViewRef = useRef<WebView>(null);
 
   // Generate HTML content for WebView
   const htmlContent = useMemo(() => {
-    if (!scenesState || !activeSceneId) return "";
+    if (!activeSceneId) return "";
     return generateVtourHTML({ scenesState, activeSceneId });
   }, [scenesState, activeSceneId]);
 
@@ -31,11 +31,24 @@ const VtourDisplayer = ({ scenesState, activeSceneId, onSceneChange }: VtourDisp
            if (window.viewer.getScene() !== "${activeSceneId}") {
              window.viewer.loadScene("${activeSceneId}");
            }
-        }
+        };
       `;
       webViewRef.current.injectJavaScript(script);
     }
   }, [activeSceneId]);
+
+  useEffect(() => {
+    if (webViewRef.current) {
+      const script = `
+        if (window.enableHotspotPicking) {
+          window.enableHotspotPicking();
+        }
+      `;
+      if (hotspotPickingState) {
+        webViewRef.current.injectJavaScript(script);
+      }
+    }
+  }, [hotspotPickingState]);
 
   const handleMessage = (event: any) => {
     try {
@@ -43,8 +56,9 @@ const VtourDisplayer = ({ scenesState, activeSceneId, onSceneChange }: VtourDisp
       if (data.type === "sceneChange" && data.sceneId !== activeSceneId) {
         onSceneChange(data.sceneId);
       }
-      if (data.type === "coords") {
-        console.log("Pannellum Coords:", data);
+      if (data.type === "hotspotCoords") {
+        const { yaw, pitch } = data;
+        onAddNewHotspot(yaw, pitch);
       }
     } catch (e) {
       console.error("JSON Parse error", e);

@@ -25,10 +25,10 @@ export const defaultBlankVtourScene: PlayerScene = {
   saveCamera: true,
 };
 
-export const defaultBlankVtourHotspot = (index: number): PlayerHotspot => ({
+export const defaultBlankVtourHotspot = (index: number, yaw: number, pitch: number): PlayerHotspot => ({
   title: "Hotspot " + (index + 1),
-  yaw: 0,
-  pitch: 0,
+  yaw: yaw || 0,
+  pitch: pitch || 0,
   sceneId: "",
   imageUrl: null,
   imageWidth: null,

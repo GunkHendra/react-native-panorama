@@ -26,31 +26,29 @@ export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourH
         background: #000;
       }
 
-      #customLoader {
-        display: none;
+      #loadingScreen {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.65);
-        backdrop-filter: blur(4px);
-        color: white;
-        z-index: 9999;
-
+        background: #fff;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
+        gap: 12px;
+        z-index: 9999;
+        color: black;
         font-family: sans-serif;
       }
 
       .spinner {
+        border: 6px solid rgba(200, 200, 200, 0.5);
+        border-top: 6px solid black;
+        border-radius: 50%;
         width: 50px;
         height: 50px;
-        border: 6px solid rgba(255, 255, 255, 0.2);
-        border-top: 6px solid white;
-        border-radius: 50%;
         animation: spin 1s linear infinite;
       }
 
@@ -60,14 +58,18 @@ export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourH
         }
       }
 
-      #loadingScreen {
+      #loadingScreenText {
+        font-size: 14px;
+      }
+
+      #hotspotPickingUI {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background: #000;
-        display: flex;
+        background: rgba(250, 250, 250, 0.5);
+        display: none;
         flex-direction: column;
         justify-content: center;
         align-items: center;
@@ -75,109 +77,80 @@ export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourH
         z-index: 9999;
         color: white;
         font-family: sans-serif;
+        pointer-events: none;
       }
 
-      .spinner {
-        border: 6px solid rgba(255, 255, 255, 0.2);
-        border-top: 6px solid white;
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        animation: spin 1s linear infinite;
-      }
-
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-
-      .pnlm-load-box {
-        display: none !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
+      #hotspotPickingText {
+        position: absolute;
+        top: 20px;
+        font-size: 14px;
       }
     </style>
   </head>
   <body>
     <div id="loadingScreen">
       <div class="spinner"></div>
-      <div style="font-size: 14px">Loading panorama...</div>
+      <div id="loadingScreen">Loading panorama...</div>
     </div>
-    <div id="customLoader">
-      <div class="spinner"></div>
+    <div id="hotspotPickingUI">
+      <div id="hotspotPickingText">Tap anywhere to place the hotspot</div>
     </div>
     <div id="panorama"></div>
-    
+
     <script>
-      // ==========================================
-      // BAGIAN DINAMIS (INJECTED DARI REACT NATIVE)
-      // ==========================================
-      
-      const apiScenes = ${JSON.stringify(scenesState)};
-      const baseUrl = "${BASE_IMG_URL}";
-      
+      const scenes = ${JSON.stringify(scenesState)};
+      const baseUrl = ${JSON.stringify(BASE_IMG_URL)};
+
       // Kita proses data dari API agar sesuai format Pannellum
       const processedScenes = {};
-      let firstSceneId = null;
-
-      // Determine starting scene: passed prop OR first key
-      let startScene = "${activeSceneId}";
+      let firstSceneId = ${JSON.stringify(activeSceneId || null)};
 
       // Helper untuk menggabungkan URL agar aman dari double slash
       const getFullUrl = (path) => {
-         if (!path) return "";
-         if (path.startsWith("http")) return path; // Jika sudah URL lengkap
-         
-         const cleanBase = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
-         const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-         return cleanBase + cleanPath;
+        if (!path) return "";
+        if (path.startsWith("http")) return path; // Jika sudah URL lengkap
+
+        const cleanBase = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
+        const cleanPath = path.startsWith("/") ? path.substring(1) : path;
+        return cleanBase + cleanPath;
       };
 
       // Loop data API dan konversi
-      if (apiScenes) {
-        Object.keys(apiScenes).forEach(key => {
-            if (!firstSceneId) firstSceneId = key;
-            
-            const scene = apiScenes[key];
-            
-            // Konversi Hotspots
-            const hotspots = (scene.hotSpots || []).map(spot => ({
-                pitch: spot.pitch,
-                yaw: spot.yaw,
-                type: spot.sceneId ? "scene" : "info",
-                text: spot.title,
-                sceneId: spot.sceneId,
-                targetYaw: spot.targetYaw || 0,     // Default value
-                targetPitch: spot.targetPitch || 0  // Default value
-            }));
+      if (scenes) {
+        Object.keys(scenes).forEach((key) => {
+          if (!firstSceneId) firstSceneId = key;
 
-            processedScenes[key] = {
-                // title: scene.title || key,
-                type: "equirectangular",
-                // API pakai 'image', Pannellum pakai 'panorama'
-                panorama: getFullUrl(scene.image), 
-                crossOrigin: "anonymous",
-                yaw: scene.yaw || 0,
-                pitch: scene.pitch || 0,
-                hfov: 100,
-                hotSpots: hotspots
-            };
+          const scene = scenes[key];
+
+          // Konversi Hotspots
+          const hotspots = (scene.hotSpots || []).map((spot) => ({
+            pitch: spot.pitch,
+            yaw: spot.yaw,
+            type: spot.sceneId ? "scene" : "info",
+            text: spot.title,
+            sceneId: spot.sceneId,
+            targetYaw: spot.targetYaw || 0, // Default value
+            targetPitch: spot.targetPitch || 0, // Default value
+          }));
+
+          processedScenes[key] = {
+            // title: scene.title || key,
+            type: "equirectangular",
+            // API pakai 'image', Pannellum pakai 'panorama'
+            panorama: getFullUrl(scene.image),
+            crossOrigin: "anonymous",
+            yaw: scene.yaw || 0,
+            pitch: scene.pitch || 0,
+            hfov: 100,
+            hotSpots: hotspots,
+          };
         });
       }
 
-      // Fallback if initialSceneId wasn't found or provided
-      if (!startScene && Object.keys(processedScenes).length > 0) {
-        startScene = Object.keys(processedScenes)[0];
-      }
-
-      // ==========================================
-      // INISIALISASI VIEWER (KODE ASLI KAMU)
-      // ==========================================
-
+      // Initialize Pannellum viewer
       var viewer = pannellum.viewer("panorama", {
         default: {
-          firstScene: startScene, // Use the specific scene ID
+          firstScene: firstSceneId, // Starting scene
           autoLoad: true,
           showControls: false,
           showLoader: false,
@@ -185,79 +158,77 @@ export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourH
           showZoomCtrl: false,
           sceneFadeDuration: 2000,
         },
-        scenes: processedScenes, // Menggunakan object yang sudah diproses
+        scenes: processedScenes, // use the processed scenes
       });
 
-      const loader = document.getElementById("customLoader");
+      const loader = document.getElementById("loadingScreen");
 
       // Show loader when switching scenes
       viewer.on("scenechange", function () {
         loader.style.display = "flex";
       });
 
-      // Hide loader ONLY when the new scene is ready
       viewer.on("load", function () {
-        loader.style.display = "none";
-      });
-
-      viewer.on("load", function () {
-        // Hide loader only ONCE
-        const loader = document.getElementById("loadingScreen");
-        if (loader) loader.style.display = "none";
-      });
-
-      // ==========================================
-      // SYNC: WEBVIEW -> REACT NATIVE (Hotspot Click)
-      // ==========================================
-
-      // When the scene finishes loading (happens on init AND hotspot click)
-      window.viewer.on("load", function () {
         const currentSceneId = window.viewer.getScene();
-        
-        // Hide loader
-        const loader = document.getElementById("loadingScreen");
-        if (loader) loader.style.display = "none";
-        document.getElementById("customLoader").style.display = "none";
 
-        // Send message to React Native
+        loader.style.display = "none";
+
+        // Send message to Parent React Native Component
         const msg = JSON.stringify({
           type: "sceneChange",
-          sceneId: currentSceneId
+          sceneId: currentSceneId,
         });
-        
+
         if (window.ReactNativeWebView) {
-          window.ReactNativeWebView.postMessage(msg);
-        }
-      });
-
-      // Preload all scene images on startup
-      var preloadedImages = {};
-      Object.keys(viewer.getConfig().scenes).forEach(function (sceneId) {
-        var scene = viewer.getConfig(sceneId);
-        if (scene.panorama && !preloadedImages[scene.panorama]) {
-          var img = new Image();
-          img.crossOrigin = "anonymous";
-          img.src = scene.panorama;
-          preloadedImages[scene.panorama] = img;
-        }
-      });
-
-      // Tap anywhere to log yaw/pitch
-      viewer.on("mousedown", function (e) {
-        var coords = viewer.mouseEventToCoords(e);
-        var msg = JSON.stringify({
-          type: "coords",
-          yaw: coords[1],
-          pitch: coords[0],
-        });
-        if (
-          window.ReactNativeWebView &&
-          window.ReactNativeWebView.postMessage
-        ) {
           window.ReactNativeWebView.postMessage(msg);
         } else {
           console.log(msg);
         }
+      });
+
+      let isPickingHotspot = false;
+      let hotspotPickingUI = document.getElementById("hotspotPickingUI");
+
+      function enableHotspotPicking() {
+        isPickingHotspot = true;
+        showHotspotPickingUI();
+      }
+
+      function disableHotspotPicking() {
+        isPickingHotspot = false;
+        hideHotspotPickingUI();
+      }
+
+      function showHotspotPickingUI() {
+        if (!hotspotPickingUI) return;
+        hotspotPickingUI.style.display = "flex";
+      }
+
+      function hideHotspotPickingUI() {
+        if (hotspotPickingUI) {
+          hotspotPickingUI.style.display = "none";
+        }
+      }
+
+      // Tap anywhere to log yaw/pitch
+      viewer.on("mousedown", function (e) {
+        if (!isPickingHotspot) return;
+
+        const coords = viewer.mouseEventToCoords(e);
+
+        const msg = JSON.stringify({
+          type: "hotspotCoords",
+          yaw: coords[1],
+          pitch: coords[0],
+        });
+
+        if (window.ReactNativeWebView) {
+          window.ReactNativeWebView.postMessage(msg);
+        } else {
+          console.log(msg);
+        }
+
+        disableHotspotPicking();
       });
     </script>
   </body>

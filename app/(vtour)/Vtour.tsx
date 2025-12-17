@@ -43,6 +43,7 @@ const Vtour = () => {
     // Local menu states
     const [activeTab, setActiveTab] = useState<'scenes' | 'hotspots'>('scenes');
     const [hasMoreScenes, setHasMoreScenes] = useState(false);
+    const [hotspotPickingState, setHotspotPickingState] = useState(false);
 
     // Scene and hotspots that is active in the editor
     const [activeSceneId, setActiveSceneId] = useState("");
@@ -91,7 +92,7 @@ const Vtour = () => {
     }, [sceneIds]);
 
     const handleAddNewScene = () => {
-        const newId = `scene_${Object.keys(scenesState).length + 1}`;
+        const newId = `scene${Object.keys(scenesState).length + 1}`;
         setScenesState((prev) => ({
             ...prev,
             [newId]: defaultBlankVtourScene,
@@ -99,13 +100,18 @@ const Vtour = () => {
         setActiveSceneId(newId);
     };
 
-    const handleAddNewHotspot = () => {
-        const newHotspots = { ...defaultBlankVtourHotspot(activeHotspots.length) };
+    const handleHotspotPickingMode = () => {
+        setHotspotPickingState(true);
+    }
+
+    const handleAddNewHotspot = (yaw: number, pitch: number) => {
+        const newHotspots = { ...defaultBlankVtourHotspot(activeHotspots.length, yaw, pitch) };
         setActiveHotspots([...activeHotspots, newHotspots]);
         setScenesState((prev) => ({
             ...prev,
-            [activeSceneId]: { ...prev[activeSceneId], hotSpots: activeHotspots },
+            [activeSceneId]: { ...prev[activeSceneId], hotSpots: [...activeHotspots, newHotspots] },
         }));
+        setHotspotPickingState(false);
     }
 
     // const handleSceneChange = (sceneId: string, patch: Partial<PlayerScene>) => {
@@ -136,8 +142,8 @@ const Vtour = () => {
     };
 
 
-    const currentIndex = sceneIds.indexOf(activeSceneId || sceneIds[0]);
     const goNextScene = () => {
+        const currentIndex = sceneIds.indexOf(activeSceneId || sceneIds[0]);
         const nextIndex = (currentIndex + 1) % sceneIds.length;
         const nextSceneId = sceneIds[nextIndex];
         setActiveSceneId(nextSceneId);
@@ -145,8 +151,10 @@ const Vtour = () => {
     };
 
     const goPrevScene = () => {
+        const currentIndex = sceneIds.indexOf(activeSceneId || sceneIds[0]);
         const prevIndex = (currentIndex - 1 + sceneIds.length) % sceneIds.length;
         const prevSceneId = sceneIds[prevIndex];
+        console.log("Prev Scene ID:", prevSceneId);
         setActiveSceneId(prevSceneId);
         setActiveHotspots(scenesState[prevSceneId]?.hotSpots || []);
     };
@@ -194,7 +202,7 @@ const Vtour = () => {
                 }
                 {activeTab === 'hotspots' &&
                     <View className="absolute top-4 right-4 z-50">
-                        <CustomFloatingButton text='Add New Hotspot' icon='plus' onPress={handleAddNewHotspot} />
+                        <CustomFloatingButton text='Add New Hotspot' icon='plus' onPress={handleHotspotPickingMode} />
                     </View>
                 }
                 <VtourDisplayer
@@ -204,6 +212,8 @@ const Vtour = () => {
                         setActiveSceneId(newSceneId);
                         setActiveHotspots(scenesState[newSceneId]?.hotSpots || []);
                     }}
+                    hotspotPickingState={hotspotPickingState}
+                    onAddNewHotspot={handleAddNewHotspot}
                 />
 
                 <View className="items-center">

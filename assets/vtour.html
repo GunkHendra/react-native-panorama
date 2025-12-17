@@ -16,31 +16,29 @@
         background: #000;
       }
 
-      #customLoader {
-        display: none;
+      #loadingScreen {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.65);
-        backdrop-filter: blur(4px);
-        color: white;
-        z-index: 9999;
-
+        background: #fff;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
+        gap: 12px;
+        z-index: 9999;
+        color: black;
         font-family: sans-serif;
       }
 
       .spinner {
+        border: 6px solid rgba(200, 200, 200, 0.5);
+        border-top: 6px solid black;
+        border-radius: 50%;
         width: 50px;
         height: 50px;
-        border: 6px solid rgba(255, 255, 255, 0.2);
-        border-top: 6px solid white;
-        border-radius: 50%;
         animation: spin 1s linear infinite;
       }
 
@@ -50,13 +48,17 @@
         }
       }
 
-      #loadingScreen {
+      #loadingScreenText {
+        font-size: 14px;
+      }
+
+      #hotspotPickingUI {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background: #000;
+        background: rgba(250, 250, 250, 0.5);
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -65,89 +67,161 @@
         z-index: 9999;
         color: white;
         font-family: sans-serif;
+        pointer-events: none;
       }
 
-      .spinner {
-        border: 6px solid rgba(255, 255, 255, 0.2);
-        border-top: 6px solid white;
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        animation: spin 1s linear infinite;
-      }
-
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-
-      .pnlm-load-box {
-        display: none !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
+      #hotspotPickingText {
+        position: absolute;
+        top: 20px;
+        font-size: 14px;
       }
     </style>
   </head>
   <body>
     <div id="loadingScreen">
       <div class="spinner"></div>
-      <div style="font-size: 14px">Loading panorama...</div>
+      <div id="loadingScreen">Loading panorama...</div>
     </div>
-    <div id="customLoader">
-      <div class="spinner"></div>
+    <div id="hotspotPickingUI">
+      <div id="hotspotPickingText">Tap anywhere to place the hotspot</div>
     </div>
     <div id="panorama"></div>
+
     <script>
+      // const scenes = ${JSON.stringify(scenesState)};
       const scenes = {
-        spotA: {
-          title: "Spot A",
-          type: "equirectangular",
-          panorama:
-            "https://raw.githubusercontent.com/GunkHendra/react-native-panorama/refs/heads/master/assets/panorama-2.jpg",
-          crossOrigin: "anonymous",
-          yaw: 0,
-          pitch: 0,
-          hfov: 100,
+        scene1: {
+          type: "sphere",
+          cubeTextureCount: "single",
+          sphereWidthSegments: 100,
+          sphereHeightSegments: 40,
+          image:
+            "googlevr/gvr-android-sdk/master/assets/panoramas/testRoom1_2kMono.jpg",
+          saveCamera: true,
+          title: "tes scene 1",
+          titleHtml: false,
+          titleSelector: null,
           hotSpots: [
             {
-              // Position of the clickable point (adjust using the yaw/pitch logger below)
-              pitch: 2,
-              yaw: 90,
-              type: "scene",
-              text: "Go to Spot B",
-              sceneId: "spotB",
-              targetYaw: 0,
-              targetPitch: 0,
+              title: "Tes hotspot 1",
+              yaw: 0,
+              pitch: 0,
+              sceneId: "scene2",
+              imageUrl: null,
+              imageWidth: null,
+              imageHeight: null,
+              link: null,
+              linkNewWindow: false,
+              popoverHtml: true,
+              popoverContent: null,
+              popoverSelector: null,
+              popoverLazyload: true,
+              popoverShow: false,
             },
           ],
         },
-        spotB: {
-          title: "Spot B",
-          type: "equirectangular",
-          panorama:
-            "https://raw.githubusercontent.com/GunkHendra/react-native-panorama/refs/heads/master/assets/panorama-2.jpg",
-          crossOrigin: "anonymous",
-          yaw: 180,
-          pitch: 0,
-          hfov: 100,
+        scene2: {
+          type: "sphere",
+          cubeTextureCount: "single",
+          sphereWidthSegments: 100,
+          sphereHeightSegments: 40,
+          image:
+            "GunkHendra/react-native-panorama/refs/heads/master/assets/panorama.jpg",
+          saveCamera: true,
+          title: "tes scene 2",
+          titleHtml: false,
+          titleSelector: null,
           hotSpots: [
             {
+              title: "Tes hotspot 2",
+              yaw: 0,
               pitch: 0,
-              yaw: -90,
-              type: "scene",
-              text: "Back to Spot A",
-              sceneId: "spotA",
-              targetYaw: 0,
-              targetPitch: 0,
+              sceneId: "scene1",
+              imageUrl: null,
+              imageWidth: null,
+              imageHeight: null,
+              link: null,
+              linkNewWindow: false,
+              popoverHtml: true,
+              popoverContent: null,
+              popoverSelector: null,
+              popoverLazyload: true,
+              popoverShow: false,
+            },
+            {
+              title: "Hotspot 2",
+              yaw: 0,
+              pitch: 0,
+              sceneId: "scene1",
+              imageUrl: null,
+              imageWidth: null,
+              imageHeight: null,
+              link: null,
+              linkNewWindow: false,
+              popoverHtml: true,
+              popoverContent: null,
+              popoverSelector: null,
+              popoverLazyload: true,
+              popoverShow: false,
             },
           ],
         },
       };
+      const baseUrl = "https://raw.githubusercontent.com/";
 
+      // Kita proses data dari API agar sesuai format Pannellum
+      const processedScenes = {};
+      let firstSceneId = null;
+
+      // Starting scene ID
+      // let startScene = "${activeSceneId}";
+
+      // Helper untuk menggabungkan URL agar aman dari double slash
+      const getFullUrl = (path) => {
+        if (!path) return "";
+        if (path.startsWith("http")) return path; // Jika sudah URL lengkap
+
+        const cleanBase = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
+        const cleanPath = path.startsWith("/") ? path.substring(1) : path;
+        return cleanBase + cleanPath;
+      };
+
+      // Loop data API dan konversi
+      if (scenes) {
+        Object.keys(scenes).forEach((key) => {
+          if (!firstSceneId) firstSceneId = key;
+
+          const scene = scenes[key];
+
+          // Konversi Hotspots
+          const hotspots = (scene.hotSpots || []).map((spot) => ({
+            pitch: spot.pitch,
+            yaw: spot.yaw,
+            type: spot.sceneId ? "scene" : "info",
+            text: spot.title,
+            sceneId: spot.sceneId,
+            targetYaw: spot.targetYaw || 0, // Default value
+            targetPitch: spot.targetPitch || 0, // Default value
+          }));
+
+          processedScenes[key] = {
+            // title: scene.title || key,
+            type: "equirectangular",
+            // API pakai 'image', Pannellum pakai 'panorama'
+            panorama: getFullUrl(scene.image),
+            crossOrigin: "anonymous",
+            yaw: scene.yaw || 0,
+            pitch: scene.pitch || 0,
+            hfov: 100,
+            hotSpots: hotspots,
+          };
+        });
+      }
+
+      // Initialize Pannellum viewer
       var viewer = pannellum.viewer("panorama", {
         default: {
-          firstScene: "spotA",
+          firstScene: firstSceneId, // Starting scene
           autoLoad: true,
           showControls: false,
           showLoader: false,
@@ -155,55 +229,77 @@
           showZoomCtrl: false,
           sceneFadeDuration: 2000,
         },
-        scenes: scenes,
+        scenes: processedScenes, // use the processed scenes
       });
 
-      const loader = document.getElementById("customLoader");
+      const loader = document.getElementById("loadingScreen");
 
       // Show loader when switching scenes
-      viewer.on("scenechange", function () {
+      viewer.on("sceneChange", function () {
         loader.style.display = "flex";
       });
 
-      // Hide loader ONLY when the new scene is ready
       viewer.on("load", function () {
+        const currentSceneId = window.viewer.getScene();
+
         loader.style.display = "none";
-      });
 
-      viewer.on("load", function () {
-        // Hide loader only ONCE
-        const loader = document.getElementById("loadingScreen");
-        if (loader) loader.style.display = "none";
-      });
-
-      // Preload all scene images on startup
-      var preloadedImages = {};
-      Object.keys(viewer.getConfig().scenes).forEach(function (sceneId) {
-        var scene = viewer.getConfig(sceneId);
-        if (scene.panorama && !preloadedImages[scene.panorama]) {
-          var img = new Image();
-          img.crossOrigin = "anonymous";
-          img.src = scene.panorama;
-          preloadedImages[scene.panorama] = img;
-        }
-      });
-
-      // Tap anywhere to log yaw/pitch so you can place hotspots precisely
-      viewer.on("mousedown", function (e) {
-        var coords = viewer.mouseEventToCoords(e);
-        var msg = JSON.stringify({
-          type: "coords",
-          yaw: coords[1],
-          pitch: coords[0],
+        // Send message to Parent React Native Component
+        const msg = JSON.stringify({
+          type: "sceneChange",
+          sceneId: currentSceneId,
         });
-        if (
-          window.ReactNativeWebView &&
-          window.ReactNativeWebView.postMessage
-        ) {
+
+        if (window.ReactNativeWebView) {
           window.ReactNativeWebView.postMessage(msg);
         } else {
           console.log(msg);
         }
+      });
+
+      let isPickingHotspot = true;
+      let hotspotPickingUI = document.getElementById("hotspotPickingUI");
+
+      function enableHotspotPicking() {
+        isPickingHotspot = true;
+        showHotspotPickingUI();
+      }
+
+      function disableHotspotPicking() {
+        isPickingHotspot = false;
+        hideHotspotPickingUI();
+      }
+
+      function showHotspotPickingUI() {
+        if (hotspotPickingUI) return;
+        hotspotPickingUI.style.display = "flex";
+      }
+
+      function hideHotspotPickingUI() {
+        if (hotspotPickingUI) {
+          hotspotPickingUI.style.display = "none";
+        }
+      }
+
+      // Tap anywhere to log yaw/pitch
+      viewer.on("mousedown", function (e) {
+        if (!isPickingHotspot) return;
+
+        const coords = viewer.mouseEventToCoords(e);
+
+        const msg = JSON.stringify({
+          type: "hotspotCoords",
+          yaw: coords[1],
+          pitch: coords[0],
+        });
+
+        if (window.ReactNativeWebView) {
+          window.ReactNativeWebView.postMessage(msg);
+        } else {
+          console.log(msg);
+        }
+
+        disableHotspotPicking();
       });
     </script>
   </body>
