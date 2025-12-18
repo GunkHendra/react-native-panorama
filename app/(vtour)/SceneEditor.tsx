@@ -6,7 +6,7 @@ import { useAddNewImage, useGetFiles } from '@/hooks/useVtour';
 import { PlayerScene } from '@/interfaces/vtour';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 
 interface SceneEditorProps {
@@ -14,44 +14,34 @@ interface SceneEditorProps {
     USER_ID: string;
     activeScene: PlayerScene;
     activeSceneId: string;
-    // isEmptyScene?: boolean;
-    // onChangeScene: (sceneId: string, patch: Partial<PlayerScene>) => void;
     onChangeScene: (patch: Partial<PlayerScene>) => void;
-    // onNewImageUpload: (uri: string | null) => void;
+    onDeleteScene: (sceneId: string) => void;
 }
 
-// const SceneEditor = forwardRef(({ TOUR_ID, USER_ID, activeScene, activeSceneId, onChangeScene }: SceneEditorProps, ref) => {
-const SceneEditor = ({ TOUR_ID, USER_ID, activeScene, activeSceneId, onChangeScene }: SceneEditorProps) => {
+const SceneEditor = ({ TOUR_ID, USER_ID, activeScene, activeSceneId, onChangeScene, onDeleteScene }: SceneEditorProps) => {
     // Local states
     const [title, setTitle] = useState("");
     const [type, setType] = useState("");
     const [image, setImage] = useState("");
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     // Api hooks
     const addNewImage = useAddNewImage();
     const { data: files, refetch: refetchFiles } = useGetFiles(USER_ID);
 
-    // const [localScene, setLocalScene] = useState<PlayerScene>(defaultBlankVtourScene);
 
     useEffect(() => {
-        // if (isEmptyScene) {
-        //     setLocalScene(defaultBlankVtourScene);
-        //     setTitle("");
-        //     setType("");
-        //     setImage("");
-        // } else if (activeScene) {
-        // setLocalScene(activeScene);
         if (activeScene) {
             setTitle(activeScene.title || "");
             setType(activeScene.type || "");
             setImage(activeScene.image || "");
+        } else {
+            setTitle("");
+            setType("");
+            setImage("");
         }
-        // }
     }, [activeSceneId, activeScene]);
 
-    // const updateLocalScene = (patch: Partial<PlayerScene>) => {
-    //     setLocalScene(prev => ({ ...prev, ...patch }));
-    // };
 
     const handlePickImage = async () => {
         const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -90,20 +80,12 @@ const SceneEditor = ({ TOUR_ID, USER_ID, activeScene, activeSceneId, onChangeSce
             if (!newImagePath) return;
 
             setImage(newImagePath);
-            // onChangeScene(activeSceneId, { image: newImagePath });
             onChangeScene({ image: newImagePath });
-            // onNewImageUpload(newImagePath);
-            // if (isNewScene) updateLocalScene({ image: newImagePath });
-            // else if (activeSceneId) onChangeScene(activeSceneId, { image: newImagePath });
         } catch (e) {
             console.warn('Upload failed', e);
         }
     };
 
-    // useImperativeHandle(ref, () => ({
-    //     getLocalScene: () => localScene,
-    //     isNew: !activeSceneId
-    // }));
 
     return (
         <View>
@@ -114,9 +96,6 @@ const SceneEditor = ({ TOUR_ID, USER_ID, activeScene, activeSceneId, onChangeSce
                     placeholder="Enter Title"
                     onChangeText={(text) => {
                         setTitle(text);
-                        // if (isNewScene) updateLocalScene({ title: text });
-                        // else if (activeSceneId) onChangeScene(activeSceneId, { title: text });
-                        // onChangeScene(activeSceneId, { title: text });
                         onChangeScene({ title: text });
                     }}
                 />
@@ -137,9 +116,6 @@ const SceneEditor = ({ TOUR_ID, USER_ID, activeScene, activeSceneId, onChangeSce
                     value={type}
                     onChange={(text) => {
                         setType(text.value);
-                        // if (isNewScene) updateLocalScene({ type: text.value });
-                        // else if (activeSceneId) onChangeScene(activeSceneId, { type: text.value });
-                        // onChangeScene(activeSceneId, { type: text.value });
                         onChangeScene({ type: text.value });
                     }}
                 />
@@ -157,6 +133,43 @@ const SceneEditor = ({ TOUR_ID, USER_ID, activeScene, activeSceneId, onChangeSce
                     <CustomText text={`Selected: ${image}`} size="small" isDimmed />
                 ) : null}
             </View>
+
+            <CustomButton
+                text={'Delete Scene: ' + title}
+                onPress={() => setShowDeleteModal(true)}
+                isCenter
+            />
+
+            <Modal
+                transparent
+                animationType="fade"
+                visible={showDeleteModal}
+                onRequestClose={() => setShowDeleteModal(false)}
+            >
+                <View className="flex-1 bg-black/50 justify-center items-center px-6">
+                    <View className="w-full rounded-2xl bg-white p-5">
+                        <CustomText text={`Delete Scene: ${title}`} size="h2" classname="mb-3" />
+                        <CustomText text="Are you sure you want to delete this scene? This action cannot be undone." isDimmed />
+                        <View className="flex-row justify-end gap-3 mt-4">
+                            <TouchableOpacity
+                                className="px-4 py-2 rounded-lg bg-border"
+                                onPress={() => setShowDeleteModal(false)}
+                            >
+                                <CustomText text="Cancel" />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                className="px-4 py-2 rounded-lg bg-red-600"
+                                onPress={() => {
+                                    onDeleteScene(activeSceneId);
+                                    setShowDeleteModal(false);
+                                }}
+                            >
+                                <CustomText text="Delete" classname="text-white" />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
     )
 }

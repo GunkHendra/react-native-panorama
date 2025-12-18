@@ -130,6 +130,24 @@ const Vtour = () => {
         }));
     };
 
+    const handleDeleteScene = (sceneId: string) => {
+        const updatedScenes = { ...scenesState };
+        delete updatedScenes[sceneId];
+        setScenesState(updatedScenes);
+        // If the deleted scene was the active scene, switch to another scene
+        if (activeSceneId === sceneId) {
+            const remainingSceneIds = Object.keys(updatedScenes);
+            if (remainingSceneIds.length > 0) {
+                const newActiveSceneId = remainingSceneIds[0];
+                setActiveSceneId(newActiveSceneId);
+                setActiveHotspots(updatedScenes[newActiveSceneId]?.hotSpots || []);
+            } else {
+                setActiveSceneId("");
+                setActiveHotspots([]);
+            }
+        }
+    };
+
     const handleSave = async () => {
         const payload: Partial<VTour> = {
             title: vtourTitle,
@@ -254,7 +272,7 @@ const Vtour = () => {
                 </View>
 
                 {activeTab === 'scenes' &&
-                    <SceneEditor TOUR_ID={TOUR_ID} USER_ID={USER_ID} activeScene={scenesState[activeSceneId]} activeSceneId={activeSceneId} onChangeScene={handleSceneChange} />
+                    <SceneEditor TOUR_ID={TOUR_ID} USER_ID={USER_ID} activeScene={scenesState[activeSceneId]} activeSceneId={activeSceneId} onChangeScene={handleSceneChange} onDeleteScene={handleDeleteScene} />
                 }
                 {activeTab === 'hotspots' && (
                     activeHotspots.length === 0 ? (
