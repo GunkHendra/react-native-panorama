@@ -1,9 +1,10 @@
 import CustomButton from "@/components/Button";
 import InputField from "@/components/InputField";
 import CustomText from "@/components/Text";
-import { useAllVtour, useCreateVtour } from "@/hooks/useVtour";
+import { useAllVtour, useCreateVtour, useDeleteVtour } from "@/hooks/useVtour";
+import { AntDesign } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import { ActivityIndicator, Modal, Pressable, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -27,9 +28,12 @@ const index = () => {
     const USER_ID = 4818;
     const { data: allVtourData, isLoading, isError, error } = useAllVtour();
     const userVtours = (allVtourData ?? []).filter(v => v.user_id === USER_ID);
-    const [showCreateModal, setShowCreateModal] = React.useState(false);
-    const [newVtourTitle, setNewVtourTitle] = React.useState("");
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteTourId, setDeleteTourId] = useState<string | null>(null);
+    const [newVtourTitle, setNewVtourTitle] = useState("");
     const createVtour = useCreateVtour();
+    const deleteVtour = useDeleteVtour();
 
 
     if (isLoading) {
@@ -77,13 +81,33 @@ const index = () => {
         }
     };
 
+    const handleDeleteVtour = async (TOUR_ID: string) => {
+        try {
+            await deleteVtour.mutateAsync(TOUR_ID);
+        } catch (e) {
+            console.warn("Delete failed", e);
+        }
+    };
+
     return (
         <SafeAreaView className="flex-1 bg-background" edges={['bottom', 'left', 'right']}>
             <ScrollView>
                 {userVtours.map(tour => (
-                    <Pressable key={tour.id} className="p-4 border-b border-border" onPress={() => handleTourPress(String(tour.id))}>
-                        <CustomText text={tour.title ?? `Tour ${tour.id}`} size="h3" />
-                        <CustomText text={`ID: ${tour.id}`} isDimmed />
+                    <Pressable key={tour.id} className="p-4 border-b border-border flex-row justify-between items-center" onPress={() => handleTourPress(String(tour.id))}>
+                        <View>
+                            <CustomText text={tour.title ?? `Tour ${tour.id}`} size="h3" />
+                            <CustomText text={`ID: ${tour.id}`} isDimmed />
+                        </View>
+                        <Pressable className="p-2" onPress={() => {
+                            setDeleteTourId(String(tour.id));
+                            setShowDeleteModal(true)
+                        }}>
+                            <AntDesign
+                                name="delete"
+                                size={20}
+                                color="rgba(1, 15, 28, 0.40)"
+                            />
+                        </Pressable>
                     </Pressable>
                 ))}
             </ScrollView>
@@ -124,6 +148,38 @@ const index = () => {
                                 disabled={createVtour.isPending}
                             >
                                 <CustomText text={createVtour.isPending ? "Creating..." : "Create"} classname="text-white" />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+            <Modal
+                transparent
+                animationType="fade"
+                visible={showDeleteModal}
+                onRequestClose={() => { setShowDeleteModal(false); setDeleteTourId(null); }}
+            >
+                <View className="flex-1 bg-black/50 justify-center items-center px-6">
+                    <View className="w-full rounded-2xl bg-white p-5">
+                        <CustomText text="Delete Virtual Tour" size="h2" classname="mb-3" />
+                        <CustomText text="Are you sure you want to delete this virtual tour? This action cannot be undone." isDimmed />
+                        <View className="flex-row justify-end gap-3 mt-4">
+                            <TouchableOpacity
+                                className="px-4 py-2 rounded-lg bg-border"
+                                onPress={() => { setShowDeleteModal(false); setDeleteTourId(null); }}
+                            >
+                                <CustomText text="Cancel" />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                className="px-4 py-2 rounded-lg bg-red-600"
+                                onPress={() => {
+                                    handleDeleteVtour(deleteTourId!);
+                                    setDeleteTourId(null);
+                                    setShowDeleteModal(false);
+                                }}
+                                disabled={deleteVtour.isPending}
+                            >
+                                <CustomText text={deleteVtour.isPending ? "Deleting..." : "Delete"} classname="text-white" />
                             </TouchableOpacity>
                         </View>
                     </View>
