@@ -118,7 +118,6 @@ const Vtour = () => {
     const handleSceneChange = (patch: Partial<PlayerScene>) => {
         setScenesState((prev) => ({
             ...prev,
-            // [sceneId]: { ...prev[sceneId], ...patch },
             [activeSceneId]: { ...prev[activeSceneId], ...patch },
         }));
     };
@@ -128,6 +127,7 @@ const Vtour = () => {
             ...prev,
             [activeSceneId]: { ...prev[activeSceneId], hotSpots: newHotspots },
         }));
+        setActiveHotspots(newHotspots);
     };
 
     const handleDeleteScene = (sceneId: string) => {

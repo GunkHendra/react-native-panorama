@@ -1,8 +1,9 @@
 import InputField from '@/components/InputField';
 import CustomText from '@/components/Text';
 import { PlayerHotspot, PlayerScene } from '@/interfaces/vtour';
+import { AntDesign } from '@expo/vector-icons';
 import React, { useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 
 const HotspotsEditor = ({ hotspots, scenes, onChangeHotspots }: { hotspots: PlayerHotspot[], scenes: Record<string, PlayerScene>, onChangeHotspots: (hotspots: PlayerHotspot[]) => void }) => {
@@ -19,13 +20,29 @@ const HotspotsEditor = ({ hotspots, scenes, onChangeHotspots }: { hotspots: Play
         onChangeHotspots(updatedHotspots);
     };
 
+    const handleHotspotsDelete = (index: number) => {
+        const updatedHotspots = hotspots.filter((_, i) => i !== index);
+        onChangeHotspots(updatedHotspots);
+    }
+
     return (
         <View className="flex-1">
             {hotspots.map((hotspot, index) => (
                 <View key={index}>
-                    <CustomText text={hotspot.title} size="h3" classname="mb-2 font-semibold" />
+                    <View className='flex-row justify-between items-center'>
+                        <View className='mb-2'>
+                            <CustomText text={hotspot.title} size="h3" classname="mb-2 font-semibold" />
+                            <CustomText text="Hotspot Title" />
+                        </View>
+                        <Pressable className="p-2" onPress={() => { handleHotspotsDelete(index); }}>
+                            <AntDesign
+                                name="delete"
+                                size={20}
+                                color="rgba(1, 15, 28, 0.40)"
+                            />
+                        </Pressable>
+                    </View>
                     <View className="gap-2 mb-4">
-                        <CustomText text="Hotspot Title" />
                         <InputField value={hotspot.title} placeholder="Enter Title" onChangeText={(text) => handleHotspotsChange(index, { ...hotspot, title: text })} />
                         <Dropdown
                             style={styles.dropdown}
