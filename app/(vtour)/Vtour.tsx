@@ -80,7 +80,7 @@ const Vtour = () => {
         if (!activeSceneId) {
             const firstScene = sceneIds[0];
             setActiveSceneId(firstScene);
-            const firstHotspots = scenesState[activeSceneId]?.hotSpots || [];
+            const firstHotspots = scenesState[firstScene]?.hotSpots || [];
             setActiveHotspots(firstHotspots);
         }
 
