@@ -65,7 +65,7 @@ const VtourDisplayer = ({ scenesState, activeSceneId, onSceneChange, hotspotPick
     }
   };
 
-  if (!activeSceneId || !scenesState[activeSceneId] || !scenesState[activeSceneId].image || !htmlContent) {
+  if (activeSceneId && !scenesState[activeSceneId].image) {
     return <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
       <View>
         <View style={{ width: 100, height: 100, borderRadius: 12, backgroundColor: '#ddd', justifyContent: 'center', alignItems: 'center' }}>
