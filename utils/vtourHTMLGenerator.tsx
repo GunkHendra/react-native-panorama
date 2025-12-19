@@ -85,12 +85,18 @@ export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourH
         top: 20px;
         font-size: 14px;
       }
+
+      .pnlm-load-box {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+      }
     </style>
   </head>
   <body>
     <div id="loadingScreen">
       <div class="spinner"></div>
-      <div id="loadingScreen">Loading panorama...</div>
+      <div id="loadingScreenText">Loading panorama...</div>
     </div>
     <div id="hotspotPickingUI">
       <div id="hotspotPickingText">Tap anywhere to place the hotspot</div>
