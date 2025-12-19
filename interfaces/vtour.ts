@@ -375,6 +375,7 @@ export interface VTour {
   thumb: string;
   code: Partial<PlayerConfig>; // Parsed from 'code'
   json_data: Partial<EditorConfig>; // Parsed from 'json_data'
+  status: "draft" | "publish";
 }
 
 export interface VTourStringified {
@@ -384,6 +385,7 @@ export interface VTourStringified {
   thumb: string;
   code: string; // Stringified JSON
   json_data: string; // Stringified JSON
+  status: "draft" | "publish";
 }
 export interface SceneOption {
   label: string;

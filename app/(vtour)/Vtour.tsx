@@ -172,7 +172,6 @@ const Vtour = () => {
         const currentIndex = sceneIds.indexOf(activeSceneId || sceneIds[0]);
         const prevIndex = (currentIndex - 1 + sceneIds.length) % sceneIds.length;
         const prevSceneId = sceneIds[prevIndex];
-        console.log("Prev Scene ID:", prevSceneId);
         setActiveSceneId(prevSceneId);
         setActiveHotspots(scenesState[prevSceneId]?.hotSpots || []);
     };

@@ -1,7 +1,8 @@
 import CustomButton from "@/components/Button";
 import InputField from "@/components/InputField";
 import CustomText from "@/components/Text";
-import { useAllVtour, useCreateVtour, useDeleteVtour } from "@/hooks/useVtour";
+import { useAllVtour, useCreateVtour, useDeleteVtour, useUpdateVtour } from "@/hooks/useVtour";
+import { VTour } from "@/interfaces/vtour";
 import { AntDesign } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -34,7 +35,7 @@ const index = () => {
     const [newVtourTitle, setNewVtourTitle] = useState("");
     const createVtour = useCreateVtour();
     const deleteVtour = useDeleteVtour();
-
+    const updateVtour = useUpdateVtour();
 
     if (isLoading) {
         return (
@@ -89,6 +90,15 @@ const index = () => {
         }
     };
 
+    const handleStatusVtour = async (TOUR_ID: string, status: string) => {
+        const payload: Partial<VTour> = {
+            status: status === "publish" ? "draft" : "publish",
+        };
+        console.log("Payload for update:", payload);
+        const response = await updateVtour.mutateAsync({ id: TOUR_ID, data: payload });
+        console.log("Update response:", response);
+    };
+
     return (
         <SafeAreaView className="flex-1 bg-background" edges={['bottom', 'left', 'right']}>
             <ScrollView>
@@ -97,17 +107,31 @@ const index = () => {
                         <View>
                             <CustomText text={tour.title ?? `Tour ${tour.id}`} size="h3" />
                             <CustomText text={`ID: ${tour.id}`} isDimmed />
+                            <View className="">
+                                <CustomText text={`${tour.status}`} classname={`${tour.status === 'publish' ? "text-green-400" : ""}`} isDimmed />
+                            </View>
                         </View>
-                        <Pressable className="p-2" onPress={() => {
-                            setDeleteTourId(String(tour.id));
-                            setShowDeleteModal(true)
-                        }}>
-                            <AntDesign
-                                name="delete"
-                                size={20}
-                                color="rgba(1, 15, 28, 0.40)"
-                            />
-                        </Pressable>
+                        <View className="flex-row gap-2">
+                            <Pressable className={`px-5 py-3 rounded-full ${tour.status === 'publish' ? "bg-gray-400" : "bg-green-400"}`} onPress={() => {
+                                handleStatusVtour(String(tour.id), tour.status);
+                            }}>
+                                {tour.status === 'publish' ? (
+                                    <CustomText text="Set to Draft" variant="light" />
+                                ) : (
+                                    <CustomText text="Publish" variant="light" />
+                                )}
+                            </Pressable>
+                            <Pressable className={`p-3 rounded-full bg-red-400`} onPress={() => {
+                                setDeleteTourId(String(tour.id));
+                                setShowDeleteModal(true)
+                            }}>
+                                <AntDesign
+                                    name="delete"
+                                    size={20}
+                                    color="rgba(250, 250, 250, 0.9)"
+                                />
+                            </Pressable>
+                        </View>
                     </Pressable>
                 ))}
             </ScrollView>

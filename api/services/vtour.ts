@@ -20,6 +20,8 @@ const transformVTourToApiPayload = (
   if (vtour.json_data !== undefined)
     payload.json_data = JSON.stringify(vtour.json_data);
 
+  if (vtour.status !== undefined) payload.status = vtour.status;
+
   return payload;
 };
 
