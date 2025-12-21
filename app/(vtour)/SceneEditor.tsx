@@ -27,7 +27,7 @@ const SceneEditor = ({ TOUR_ID, USER_ID, activeScene, activeSceneId, onChangeSce
 
     // Api hooks
     const addNewImage = useAddNewImage();
-    const { data: files, refetch: refetchFiles } = useGetFiles(USER_ID);
+    const { refetch: refetchFiles } = useGetFiles(USER_ID);
 
 
     useEffect(() => {

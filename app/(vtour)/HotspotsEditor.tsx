@@ -31,7 +31,7 @@ const HotspotsEditor = ({ hotspots, scenes, onChangeHotspots }: { hotspots: Play
                 <View key={index}>
                     <View className='flex-row justify-between items-center'>
                         <View className='mb-2'>
-                            <CustomText text={hotspot.title} size="h3" classname="mb-2 font-semibold" />
+                            <CustomText text={`Hotspot ${index + 1}`} size="h3" classname="mb-2 font-semibold" />
                             <CustomText text="Hotspot Title" />
                         </View>
                         <Pressable className="p-2" onPress={() => { handleHotspotsDelete(index); }}>
