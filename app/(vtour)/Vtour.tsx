@@ -245,7 +245,7 @@ const Vtour = () => {
                                     />
                                 </Pressable>
                             }
-                            <CustomText text={activeSceneId ? scenesState[activeSceneId].title ? scenesState[activeSceneId].title : `Untitled Scene` : `New Empty Scene`} size="normal" variant="light" />
+                            <CustomText text={scenesState[activeSceneId].title ? scenesState[activeSceneId].title : `Untitled Scene`} size="normal" variant="light" />
                             {hasMoreScenes &&
                                 <Pressable onPress={goNextScene}>
                                     <AntDesign

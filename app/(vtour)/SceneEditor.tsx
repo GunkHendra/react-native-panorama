@@ -35,12 +35,16 @@ const SceneEditor = ({ TOUR_ID, USER_ID, activeScene, activeSceneId, onChangeSce
             setTitle(activeScene.title || "");
             setType(activeScene.type || "");
             setImage(activeScene.image || "");
-        } else {
-            setTitle("");
-            setType("");
-            setImage("");
         }
     }, [activeSceneId, activeScene]);
+
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            onChangeScene({ title });
+        }, 500);
+
+        return () => clearTimeout(timeout);
+    }, [title]);
 
 
     const handlePickImage = async () => {
@@ -94,10 +98,7 @@ const SceneEditor = ({ TOUR_ID, USER_ID, activeScene, activeSceneId, onChangeSce
                 <InputField
                     value={title}
                     placeholder="Enter Title"
-                    onChangeText={(text) => {
-                        setTitle(text);
-                        onChangeScene({ title: text });
-                    }}
+                    onChangeText={(text) => { setTitle(text) }}
                 />
             </View>
 
