@@ -32,7 +32,7 @@ export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourH
         left: 0;
         right: 0;
         bottom: 0;
-        background: #fff;
+        background: rgba(255,255,255,1);
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -170,9 +170,9 @@ export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourH
       const loader = document.getElementById("loadingScreen");
 
       // Show loader when switching scenes
-      viewer.on("scenechange", function () {
-        loader.style.display = "flex";
-      });
+      // viewer.on("scenechange", function () {
+      //   loader.style.display = "flex";
+      // });
 
       viewer.on("load", function () {
         const currentSceneId = window.viewer.getScene();
