@@ -32,7 +32,7 @@ export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourH
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(255,255,255,1);
+        background: rgba(240,240,240,0.5);
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -56,10 +56,6 @@ export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourH
         to {
           transform: rotate(360deg);
         }
-      }
-
-      #loadingScreenText {
-        font-size: 14px;
       }
 
       #hotspotPickingUI {
@@ -96,7 +92,6 @@ export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourH
   <body>
     <div id="loadingScreen">
       <div class="spinner"></div>
-      <div id="loadingScreenText">Loading panorama...</div>
     </div>
     <div id="hotspotPickingUI">
       <div id="hotspotPickingText">Tap anywhere to place the hotspot</div>
@@ -162,7 +157,7 @@ export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourH
           showLoader: false,
           showFullscreenCtrl: false,
           showZoomCtrl: false,
-          sceneFadeDuration: 2000,
+          sceneFadeDuration: 3000,
         },
         scenes: processedScenes, // use the processed scenes
       });
@@ -170,9 +165,9 @@ export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourH
       const loader = document.getElementById("loadingScreen");
 
       // Show loader when switching scenes
-      // viewer.on("scenechange", function () {
-      //   loader.style.display = "flex";
-      // });
+      viewer.on("scenechange", function () {
+        loader.style.display = "flex";
+      });
 
       viewer.on("load", function () {
         const currentSceneId = window.viewer.getScene();
