@@ -45,13 +45,13 @@ const VtourDisplayer = ({ scenesState, activeSceneId, onSceneChange, hotspotPick
   useEffect(() => {
     if (webViewRef.current) {
       const script = `
-        if (window.enableHotspotPicking) {
+        if (${hotspotPickingState}) {
           window.enableHotspotPicking();
+        } else {
+          window.disableHotspotPicking();  
         }
       `;
-      if (hotspotPickingState) {
-        webViewRef.current.injectJavaScript(script);
-      }
+      webViewRef.current.injectJavaScript(script);
     }
   }, [hotspotPickingState]);
 

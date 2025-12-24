@@ -84,7 +84,6 @@ export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourH
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        gap: 12px;
         z-index: 9999;
         color: white;
         font-family: sans-serif;
@@ -92,9 +91,10 @@ export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourH
       }
 
       #hotspotPickingText {
-        position: absolute;
-        top: 20px;
         font-size: 14px;
+        color: black;
+        item-align: center;
+        text-align: center;
       }
 
       .pnlm-load-box {
@@ -109,7 +109,7 @@ export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourH
       <div class="spinner"></div>
     </div>
     <div id="hotspotPickingUI">
-      <div id="hotspotPickingText">Tap anywhere to place the hotspot</div>
+      <div id="hotspotPickingText">Tap anywhere to place the hotspot <br> You can still look around while in this mode</div>
     </div>
     <div id="panorama"></div>
 

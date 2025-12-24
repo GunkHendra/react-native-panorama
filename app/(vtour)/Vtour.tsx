@@ -100,10 +100,6 @@ const Vtour = () => {
         setActiveSceneId(newId);
     };
 
-    const handleHotspotPickingMode = () => {
-        setHotspotPickingState(true);
-    }
-
     const handleAddNewHotspot = (yaw: number, pitch: number) => {
         const newHotspots = { ...defaultBlankVtourHotspot(activeHotspots.length, yaw, pitch) };
         setActiveHotspots([...activeHotspots, newHotspots]);
@@ -219,7 +215,11 @@ const Vtour = () => {
                 }
                 {activeTab === 'hotspots' &&
                     <View className="absolute top-4 right-4 z-50">
-                        <CustomFloatingButton text='Add New Hotspot' icon='plus' onPress={handleHotspotPickingMode} />
+                        {hotspotPickingState ? (
+                            <CustomFloatingButton icon='close' onPress={() => setHotspotPickingState(false)} />
+                        ) : (
+                            <CustomFloatingButton text='Add New Hotspot' icon='plus' onPress={() => setHotspotPickingState(true)} />
+                        )}
                     </View>
                 }
                 <VtourDisplayer
