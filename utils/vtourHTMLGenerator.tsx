@@ -18,12 +18,27 @@ export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourH
     />
     <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
     <style>
-      html,
-      body,
-      #panorama {
-        height: 100%;
+      * {
         margin: 0;
-        background: #000;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        position: fixed;
+        background: transparent;
+      }
+
+      #panorama {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
       }
 
       #loadingScreen {
@@ -104,7 +119,7 @@ export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourH
 
       // Kita proses data dari API agar sesuai format Pannellum
       const processedScenes = {};
-      let firstSceneId = ${JSON.stringify(activeSceneId || null)};
+      let firstSceneId = ${JSON.stringify(activeSceneId || Object.keys(scenesState)[0] || "")};
 
       // Helper untuk menggabungkan URL agar aman dari double slash
       const getFullUrl = (path) => {

@@ -16,12 +16,17 @@ interface VtourDisplayerProps {
 
 const VtourDisplayer = ({ scenesState, activeSceneId, onSceneChange, hotspotPickingState, onAddNewHotspot }: VtourDisplayerProps) => {
   const webViewRef = useRef<WebView>(null);
+  const renderCountRef = useRef(0);
+  const htmlGenerationCountRef = useRef(0);
+
+  renderCountRef.current += 1;
 
   // Generate HTML content for WebView
   const htmlContent = useMemo(() => {
-    if (!activeSceneId) return "";
+    htmlGenerationCountRef.current += 1;
+    if (Object.keys(scenesState).length === 0) return "";
     return generateVtourHTML({ scenesState, activeSceneId });
-  }, [scenesState, activeSceneId]);
+  }, [JSON.stringify(scenesState)]);
 
   // Sync active scene changes from React Native to WebView
   useEffect(() => {

@@ -1,6 +1,9 @@
 import CustomButton, { CustomFloatingButton } from "@/components/Button";
+import HotspotsEditor from "@/components/HotspotsEditor";
 import InputField from "@/components/InputField";
+import SceneEditor from "@/components/SceneEditor";
 import CustomText from "@/components/Text";
+import VtourDisplayer from "@/components/VtourDisplayer";
 import { defaultBlankVtourHotspot, defaultBlankVtourScene } from "@/constants/vtour";
 import { useUpdateVtour, useVtour } from "@/hooks/useVtour";
 import { PlayerHotspot, PlayerScene, VTour } from "@/interfaces/vtour";
@@ -9,9 +12,6 @@ import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import HotspotsEditor from "./HotspotsEditor";
-import SceneEditor from "./SceneEditor";
-import VtourDisplayer from "./VtourDisplayer";
 
 /**
  * @description
