@@ -8,10 +8,10 @@ const { width } = Dimensions.get("window");
 
 interface VtourDisplayerProps {
   scenesState: Record<string, PlayerScene>;
-  activeSceneId: string;
-  onSceneChange: (id: string) => void;
+  activeSceneId?: string;
+  onSceneChange?: (id: string) => void;
   hotspotPickingState?: boolean;
-  onAddNewHotspot: (yaw: number, pitch: number) => void;
+  onAddNewHotspot?: (yaw: number, pitch: number) => void;
 }
 
 const VtourDisplayer = ({ scenesState, activeSceneId, onSceneChange, hotspotPickingState, onAddNewHotspot }: VtourDisplayerProps) => {
@@ -59,11 +59,11 @@ const VtourDisplayer = ({ scenesState, activeSceneId, onSceneChange, hotspotPick
     try {
       const data = JSON.parse(event.nativeEvent.data);
       if (data.type === "sceneChange" && data.sceneId !== activeSceneId) {
-        onSceneChange(data.sceneId);
+        onSceneChange?.(data.sceneId);
       }
       if (data.type === "hotspotCoords") {
         const { yaw, pitch } = data;
-        onAddNewHotspot(yaw, pitch);
+        onAddNewHotspot?.(yaw, pitch);
       }
     } catch (e) {
       console.error("JSON Parse error", e);
@@ -105,7 +105,7 @@ const VtourDisplayer = ({ scenesState, activeSceneId, onSceneChange, hotspotPick
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  viewer: { width, height: 230 },
+  viewer: { flex: 1 },
 });
 
 export default VtourDisplayer;

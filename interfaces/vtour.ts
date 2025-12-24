@@ -391,3 +391,8 @@ export interface SceneOption {
   label: string;
   value: "sphere" | "cube" | "cylinder";
 }
+
+export type VtourParams = {
+  TOUR_ID: string;
+  USER_ID: string;
+};

@@ -3,8 +3,8 @@ import { AntDesign } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
-import InputField from './InputField';
-import CustomText from './Text';
+import InputField from '../InputField';
+import CustomText from '../Text';
 
 const HotspotItem = ({
     hotspot,

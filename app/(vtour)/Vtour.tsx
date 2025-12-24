@@ -1,12 +1,13 @@
 import CustomButton, { CustomFloatingButton } from "@/components/Button";
-import HotspotsEditor from "@/components/HotspotsEditor";
 import InputField from "@/components/InputField";
-import SceneEditor from "@/components/SceneEditor";
 import CustomText from "@/components/Text";
-import VtourDisplayer from "@/components/VtourDisplayer";
+import GeneralEditor from "@/components/vtour-components/GeneralEditor";
+import HotspotsEditor from "@/components/vtour-components/HotspotsEditor";
+import SceneEditor from "@/components/vtour-components/SceneEditor";
+import VtourDisplayer from "@/components/vtour-components/VtourDisplayer";
 import { defaultBlankVtourHotspot, defaultBlankVtourScene } from "@/constants/vtour";
 import { useUpdateVtour, useVtour } from "@/hooks/useVtour";
-import { PlayerHotspot, PlayerScene, VTour } from "@/interfaces/vtour";
+import { PlayerHotspot, PlayerScene, VTour, VtourParams } from "@/interfaces/vtour";
 import { AntDesign } from '@expo/vector-icons';
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
@@ -28,11 +29,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
  * - Each hotspot includes title, target scene, and URL inputs
  */
 
-type VtourParams = {
-    TOUR_ID: string;
-    USER_ID: string;
-};
-
 const Vtour = () => {
     // Fetch vtour data
     const params = useLocalSearchParams<VtourParams>();
@@ -41,7 +37,7 @@ const Vtour = () => {
     const [vtourTitle, setVtourTitle] = useState("");
 
     // Local menu states
-    const [activeTab, setActiveTab] = useState<'scenes' | 'hotspots'>('scenes');
+    const [activeTab, setActiveTab] = useState<'general' | 'scenes' | 'hotspots'>('scenes');
     const [hasMoreScenes, setHasMoreScenes] = useState(false);
     const [hotspotPickingState, setHotspotPickingState] = useState(false);
 
@@ -262,6 +258,9 @@ const Vtour = () => {
 
             <ScrollView className="p-4" contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}>
                 <View className="flex-row justify-between mb-4 border-b border-border">
+                    <Pressable onPress={() => setActiveTab("general")} className="flex-1">
+                        <CustomText text="General" classname={`${activeTab === "general" ? "border-b border-primary transition-all duration-200" : "transition-all duration-200"} pb-2 text-center`} />
+                    </Pressable>
                     <Pressable onPress={() => setActiveTab("scenes")} className="flex-1">
                         <CustomText text="Scenes" classname={`${activeTab === "scenes" ? "border-b border-primary transition-all duration-200" : "transition-all duration-200"} pb-2 text-center`} />
                     </Pressable>
@@ -270,6 +269,9 @@ const Vtour = () => {
                     </Pressable>
                 </View>
 
+                {activeTab === 'general' &&
+                    <GeneralEditor TOUR_ID={TOUR_ID} USER_ID={USER_ID} />
+                }
                 {activeTab === 'scenes' &&
                     <SceneEditor TOUR_ID={TOUR_ID} USER_ID={USER_ID} activeScene={scenesState[activeSceneId]} activeSceneId={activeSceneId} onChangeScene={handleSceneChange} onDeleteScene={handleDeleteScene} />
                 }

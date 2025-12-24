@@ -8,6 +8,7 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { ActivityIndicator, Modal, Pressable, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import PreviewVtour from "../components/vtour-components/PreviewVtour";
 
 /**
  * @description
@@ -33,6 +34,7 @@ const index = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteTourId, setDeleteTourId] = useState<string | null>(null);
     const [newVtourTitle, setNewVtourTitle] = useState("");
+    const [previewTourId, setPreviewTourId] = useState<string | null>(null);
     const createVtour = useCreateVtour();
     const deleteVtour = useDeleteVtour();
     const updateVtour = useUpdateVtour();
@@ -107,11 +109,18 @@ const index = () => {
                         <View>
                             <CustomText text={tour.title ?? `Tour ${tour.id}`} size="h3" />
                             <CustomText text={`ID: ${tour.id}`} isDimmed />
-                            <View className="">
-                                <CustomText text={`${tour.status}`} classname={`${tour.status === 'publish' ? "text-green-400" : ""}`} isDimmed />
-                            </View>
+                            <CustomText text={`${tour.status}`} isDimmed />
                         </View>
                         <View className="flex-row gap-2">
+                            {/* Preview */}
+                            <Pressable
+                                className="px-5 py-3 rounded-full bg-blue-400"
+                                onPress={() => { console.log("Previewing tour:", tour.id); setPreviewTourId(String(tour.id)); }}
+                            >
+                                <CustomText text="Preview" variant="light" />
+                            </Pressable>
+
+                            {/* Publish / Draft Toggle */}
                             <Pressable className={`px-5 py-3 rounded-full ${tour.status === 'publish' ? "bg-gray-400" : "bg-green-400"}`} onPress={() => {
                                 handleStatusVtour(String(tour.id), tour.status);
                             }}>
@@ -121,6 +130,8 @@ const index = () => {
                                     <CustomText text="Publish" variant="light" />
                                 )}
                             </Pressable>
+
+                            {/* Delete */}
                             <Pressable className={`p-3 rounded-full bg-red-400`} onPress={() => {
                                 setDeleteTourId(String(tour.id));
                                 setShowDeleteModal(true)
@@ -143,6 +154,17 @@ const index = () => {
                     onPress={() => setShowCreateModal(true)}
                 />
             </View>
+            <Modal
+                visible={!!previewTourId}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setPreviewTourId(null)}
+            >
+                <PreviewVtour
+                    TOUR_ID={previewTourId}
+                    onClose={() => setPreviewTourId(null)}
+                />
+            </Modal>
             <Modal
                 transparent
                 animationType="fade"
