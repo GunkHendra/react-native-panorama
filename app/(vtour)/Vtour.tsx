@@ -3,6 +3,7 @@ import InputField from "@/components/InputField";
 import CustomText from "@/components/Text";
 import GeneralEditor from "@/components/vtour-components/GeneralEditor";
 import HotspotsEditor from "@/components/vtour-components/HotspotsEditor";
+import PreviewVtour from "@/components/vtour-components/PreviewVtour";
 import SceneEditor from "@/components/vtour-components/SceneEditor";
 import VtourDisplayer from "@/components/vtour-components/VtourDisplayer";
 import { defaultBlankVtourHotspot, defaultBlankVtourScene } from "@/constants/vtour";
@@ -11,7 +12,7 @@ import { PlayerHotspot, PlayerScene, VTour, VtourParams } from "@/interfaces/vto
 import { AntDesign } from '@expo/vector-icons';
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 /**
@@ -37,9 +38,10 @@ const Vtour = () => {
     const [vtourTitle, setVtourTitle] = useState("");
 
     // Local menu states
-    const [activeTab, setActiveTab] = useState<'general' | 'scenes' | 'hotspots'>('scenes');
+    const [activeTab, setActiveTab] = useState<'general' | 'scenes' | 'hotspots'>('general');
     const [hasMoreScenes, setHasMoreScenes] = useState(false);
     const [hotspotPickingState, setHotspotPickingState] = useState(false);
+    const [previewTourId, setPreviewTourId] = useState<string | null>(null);
 
     // Scene and hotspots that is active in the editor
     const [activeSceneId, setActiveSceneId] = useState("");
@@ -196,12 +198,19 @@ const Vtour = () => {
 
     return (
         <SafeAreaView className="flex-1 bg-background" edges={['bottom', 'left', 'right']}>
-            <View className="p-4">
+            <View className="p-4 flex-row w-full justify-between gap-2">
                 <InputField
                     value={vtourTitle}
                     placeholder="Enter Title"
                     onChangeText={setVtourTitle}
+                    classname="flex-1"
                 />
+                <Pressable
+                    className="px-5 items-center justify-center rounded-full bg-blue-400"
+                    onPress={() => { setPreviewTourId(TOUR_ID); }}
+                >
+                    <CustomText text="Preview" variant="light" />
+                </Pressable>
             </View>
             <View className={`h-1/2 relative`}>
                 {activeTab === 'scenes' &&
@@ -295,6 +304,17 @@ const Vtour = () => {
                     onPress={handleSave}
                 />
             </View>
+            <Modal
+                visible={!!previewTourId}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setPreviewTourId(null)}
+            >
+                <PreviewVtour
+                    TOUR_ID={previewTourId}
+                    onClose={() => setPreviewTourId(null)}
+                />
+            </Modal>
         </SafeAreaView>
     );
 }

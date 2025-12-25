@@ -115,7 +115,7 @@ const index = () => {
                             {/* Preview */}
                             <Pressable
                                 className="px-5 py-3 rounded-full bg-blue-400"
-                                onPress={() => { console.log("Previewing tour:", tour.id); setPreviewTourId(String(tour.id)); }}
+                                onPress={() => { setPreviewTourId(String(tour.id)); }}
                             >
                                 <CustomText text="Preview" variant="light" />
                             </Pressable>
