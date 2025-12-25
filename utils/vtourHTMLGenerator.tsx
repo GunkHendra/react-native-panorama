@@ -7,6 +7,7 @@ interface generateVtourHTMLProps {
 }
 
 export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourHTMLProps) => {
+  console.log("Scene yaw and pitch values:", Object.entries(scenesState).map(([key, scene]) => ({ key, yaw: scene.yaw, pitch: scene.pitch })));
   return `
 <!doctype html>
 <html>
@@ -140,8 +141,8 @@ export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourH
 
           // Konversi Hotspots
           const hotspots = (scene.hotSpots || []).map((spot) => ({
-            pitch: spot.pitch,
-            yaw: spot.yaw,
+            pitch: parseFloat(spot.pitch),
+            yaw: parseFloat(spot.yaw),
             type: spot.sceneId ? "scene" : "info",
             text: spot.title,
             sceneId: spot.sceneId,
@@ -150,13 +151,12 @@ export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourH
           }));
 
           processedScenes[key] = {
-            // title: scene.title || key,
+            // title: scene.title ?? key,
             type: "equirectangular",
-            // API pakai 'image', Pannellum pakai 'panorama'
             panorama: getFullUrl(scene.image),
             crossOrigin: "anonymous",
-            yaw: scene.yaw || 0,
-            pitch: scene.pitch || 0,
+            yaw: parseFloat(scene.yaw) || 0, 
+            pitch: parseFloat(scene.pitch) || 0,
             hfov: 100,
             hotSpots: hotspots,
           };
@@ -186,6 +186,13 @@ export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourH
 
       viewer.on("load", function () {
         const currentSceneId = window.viewer.getScene();
+
+        // FORCED YAW: fix initial yaw if set to 0 even though config has a different yaw
+        const config = processedScenes[currentSceneId];
+        if (viewer.getYaw() === 0 && config.yaw !== 0) {
+            viewer.setYaw(config.yaw, false);
+            viewer.setPitch(config.pitch, false);
+        }
 
         loader.style.display = "none";
 

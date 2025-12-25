@@ -31,9 +31,7 @@ const PreviewVtour = ({ TOUR_ID, onClose, }: { TOUR_ID: string | null; onClose: 
 
 
     useEffect(() => {
-        console.log("VTour data changed: ", vtourData);
         if (!vtourData || !vtourData.code || !vtourData.code.scenes) return;
-        console.log("Setting scenes state for preview...");
         setScenesState(vtourData.code.scenes);
     }, [vtourData]);
 
