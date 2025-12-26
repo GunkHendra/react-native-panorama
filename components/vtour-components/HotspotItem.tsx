@@ -6,19 +6,15 @@ import { Dropdown } from 'react-native-element-dropdown';
 import InputField from '../InputField';
 import CustomText from '../Text';
 
-const HotspotItem = ({
-    hotspot,
-    index,
-    scenesArray,
-    onChange,
-    onDelete,
-}: {
+interface HotspotItemProps {
     hotspot: PlayerHotspot;
     index: number;
     scenesArray: { label: string; value: string }[];
     onChange: (index: number, patch: Partial<PlayerHotspot>) => void;
     onDelete: (index: number) => void;
-}) => {
+}
+
+const HotspotItem = ({ hotspot, index, scenesArray, onChange, onDelete }: HotspotItemProps) => {
     const [title, setTitle] = useState(hotspot.title);
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -27,17 +23,15 @@ const HotspotItem = ({
         setTitle(hotspot.title);
     }, [hotspot.title]);
 
-    const handleTitleChange = (text: string) => {
-        setTitle(text);
+    useEffect(() => {
+        if (title === hotspot.title) return;
 
-        if (debounceRef.current) {
-            clearTimeout(debounceRef.current);
-        }
+        const timeout = setTimeout(() => {
+            onChange(index, { title: title });
+        }, 500);
 
-        debounceRef.current = setTimeout(() => {
-            onChange(index, { title: text });
-        }, 400); // ← debounce delay (ms)
-    };
+        return () => clearTimeout(timeout);
+    }, [title, hotspot.title]); // Dependencies needed
 
     return (
         <View>
@@ -55,7 +49,7 @@ const HotspotItem = ({
                 <InputField
                     value={title}
                     placeholder="Enter Title"
-                    onChangeText={handleTitleChange}
+                    onChangeText={(text) => setTitle(text)}
                 />
 
                 <Dropdown
