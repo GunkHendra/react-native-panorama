@@ -12,7 +12,7 @@ import { Dropdown } from 'react-native-element-dropdown';
 interface SceneEditorProps {
     TOUR_ID: string;
     USER_ID: string;
-    activeScene: PlayerScene;
+    activeScene: PlayerScene | null;
     activeSceneId: string;
     onChangeScene: (patch: Partial<PlayerScene>) => void;
     onDeleteScene: (sceneId: string) => void;

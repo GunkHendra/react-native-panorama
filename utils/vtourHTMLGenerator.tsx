@@ -1,13 +1,12 @@
 import { BASE_IMG_URL } from "@/constants/vtour";
-import { PlayerScene } from "@/interfaces/vtour";
+import { PlayerConfig } from "@/interfaces/vtour";
 
 interface generateVtourHTMLProps {
-  scenesState: Record<string, PlayerScene>;
+  vtourState: Partial<PlayerConfig>;
   activeSceneId?: string;
 }
 
-export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourHTMLProps) => {
-  console.log("Scene yaw and pitch values:", Object.entries(scenesState).map(([key, scene]) => ({ key, yaw: scene.yaw, pitch: scene.pitch })));
+export const generateVtourHTML = ({ vtourState, activeSceneId }: generateVtourHTMLProps) => {
   return `
 <!doctype html>
 <html>
@@ -115,12 +114,12 @@ export const generateVtourHTML = ({ scenesState, activeSceneId }: generateVtourH
     <div id="panorama"></div>
 
     <script>
-      const scenes = ${JSON.stringify(scenesState)};
+      const scenes = ${JSON.stringify(vtourState.scenes || {})};
       const baseUrl = ${JSON.stringify(BASE_IMG_URL)};
 
       // Kita proses data dari API agar sesuai format Pannellum
       const processedScenes = {};
-      let firstSceneId = ${JSON.stringify(activeSceneId || Object.keys(scenesState)[0] || "")};
+      let firstSceneId = ${JSON.stringify(activeSceneId || Object.keys(vtourState.scenes || {})[0] || "")};
 
       // Helper untuk menggabungkan URL agar aman dari double slash
       const getFullUrl = (path) => {

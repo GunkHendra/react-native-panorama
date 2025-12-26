@@ -16,16 +16,60 @@ const GeneralEditor = ({ TOUR_ID, USER_ID }: GeneralEditorProps) => {
     // Local states
     const [image, setImage] = useState("");
     const [isAutoRotateEnabled, setIsAutoRotateEnabled] = useState(false);
+    const [isBackgroundLoadEnabled, setIsBackgroundLoadEnabled] = useState(false);
+    const [isThumbSliderEnabled, setIsThumbSliderEnabled] = useState(false);
+    const [isNextPrevEnabled, setIsNextPrevEnabled] = useState(false);
+    const [isShareEnabled, setIsShareEnabled] = useState(false);
+    const [isZoomEnabled, setIsZoomEnabled] = useState(false);
+    const [isFullScreenEnabled, setIsFullScreenEnabled] = useState(false);
+    const [isAutoRotateControlEnabled, setIsAutoRotateControlEnabled] = useState(false);
+    const [isCompassEnabled, setIsCompassEnabled] = useState(false);
+    const [isTitleEnabled, setIsTitleEnabled] = useState(false);
     const [isChecked, setChecked] = useState(false);
 
     // Functions
-    const toggleSwitch = () => setIsAutoRotateEnabled(previousState => !previousState);
+    const toggleSwitch = (Opt: string) => {
+        switch (Opt) {
+            case 'AutoRotate':
+                setIsAutoRotateEnabled(previousState => !previousState);
+                break;
+            case 'BackgroundLoad':
+                setIsBackgroundLoadEnabled(previousState => !previousState);
+                break;
+            case 'ThumbSlider':
+                setIsThumbSliderEnabled(previousState => !previousState);
+                break;
+            case 'NextPrev':
+                setIsNextPrevEnabled(previousState => !previousState);
+                break;
+            case 'Share':
+                setIsShareEnabled(previousState => !previousState);
+                break;
+            case 'Zoom':
+                setIsZoomEnabled(previousState => !previousState);
+                break;
+            case 'FullScreen':
+                setIsFullScreenEnabled(previousState => !previousState);
+                break;
+            case 'AutoRotateControl':
+                setIsAutoRotateControlEnabled(previousState => !previousState);
+                break;
+            case 'Compass':
+                setIsCompassEnabled(previousState => !previousState);
+                break;
+            case 'Title':
+                setIsTitleEnabled(previousState => !previousState);
+                break;
+            default:
+                break;
+        }
+    };
 
     // Api hooks
     const addNewImage = useAddNewImage();
     const { refetch: refetchFiles } = useGetFiles(USER_ID);
 
-    const handlePickImage = async () => {
+    const handleThumbImage = async () => {
         const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (!perm.granted) return;
 
@@ -52,12 +96,9 @@ const GeneralEditor = ({ TOUR_ID, USER_ID }: GeneralEditorProps) => {
             const refreshed = await refetchFiles();
             const freshFiles = refreshed.data;
 
-            console.log("File name: ", name);
             const dir = freshFiles?.find((d: any) => d.name === TOUR_ID);
-            console.log("Refreshed files: ", dir);
             const file = dir?.files?.find((f: any) => f.name.includes(name));
             const newImagePath = file ? `upload/${USER_ID}/${TOUR_ID}/` + file.name : null;
-
 
             if (!newImagePath) return;
 
@@ -75,7 +116,7 @@ const GeneralEditor = ({ TOUR_ID, USER_ID }: GeneralEditorProps) => {
                 <CustomButton
                     text={addNewImage.isPending ? 'Uploading...' : 'Upload a file'}
                     variant="light"
-                    onPress={handlePickImage}
+                    onPress={handleThumbImage}
                     icon="upload"
                 />
                 {image ? (
@@ -89,7 +130,7 @@ const GeneralEditor = ({ TOUR_ID, USER_ID }: GeneralEditorProps) => {
                         trackColor={{ false: '#767577', true: '#81b0ff' }}
                         thumbColor={isAutoRotateEnabled ? '#f5dd4b' : '#f4f3f4'}
                         ios_backgroundColor="#3e3e3e"
-                        onValueChange={toggleSwitch}
+                        onValueChange={() => toggleSwitch('AutoRotate')}
                         value={isAutoRotateEnabled}
                     />
                 </View>
@@ -121,20 +162,20 @@ const GeneralEditor = ({ TOUR_ID, USER_ID }: GeneralEditorProps) => {
                 <CustomText text="Scene Images Background Load" />
                 <Switch
                     trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={isAutoRotateEnabled ? '#f5dd4b' : '#f4f3f4'}
+                    thumbColor={isBackgroundLoadEnabled ? '#f5dd4b' : '#f4f3f4'}
                     ios_backgroundColor="#3e3e3e"
-                    onValueChange={toggleSwitch}
-                    value={isAutoRotateEnabled}
+                    onValueChange={() => toggleSwitch('BackgroundLoad')}
+                    value={isBackgroundLoadEnabled}
                 />
             </View>
             <View className="flex-row items-center justify-between">
                 <CustomText text="Thumbnail Slider" />
                 <Switch
                     trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={isAutoRotateEnabled ? '#f5dd4b' : '#f4f3f4'}
+                    thumbColor={isThumbSliderEnabled ? '#f5dd4b' : '#f4f3f4'}
                     ios_backgroundColor="#3e3e3e"
-                    onValueChange={toggleSwitch}
-                    value={isAutoRotateEnabled}
+                    onValueChange={() => toggleSwitch('ThumbSlider')}
+                    value={isThumbSliderEnabled}
                 />
             </View>
             <View>
@@ -142,14 +183,14 @@ const GeneralEditor = ({ TOUR_ID, USER_ID }: GeneralEditorProps) => {
                     <CustomText text="Scene Next/Previous Control" />
                     <Switch
                         trackColor={{ false: '#767577', true: '#81b0ff' }}
-                        thumbColor={isAutoRotateEnabled ? '#f5dd4b' : '#f4f3f4'}
+                        thumbColor={isNextPrevEnabled ? '#f5dd4b' : '#f4f3f4'}
                         ios_backgroundColor="#3e3e3e"
-                        onValueChange={toggleSwitch}
-                        value={isAutoRotateEnabled}
+                        onValueChange={() => toggleSwitch('NextPrev')}
+                        value={isNextPrevEnabled}
                     />
 
                 </View>
-                {isAutoRotateEnabled &&
+                {isNextPrevEnabled &&
                     <View className="gap-2 flex-row items-center">
                         <Checkbox
                             style={styles.checkbox}
@@ -165,60 +206,60 @@ const GeneralEditor = ({ TOUR_ID, USER_ID }: GeneralEditorProps) => {
                 <CustomText text="Share Control" />
                 <Switch
                     trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={isAutoRotateEnabled ? '#f5dd4b' : '#f4f3f4'}
+                    thumbColor={isShareEnabled ? '#f5dd4b' : '#f4f3f4'}
                     ios_backgroundColor="#3e3e3e"
-                    onValueChange={toggleSwitch}
-                    value={isAutoRotateEnabled}
+                    onValueChange={() => toggleSwitch('Share')}
+                    value={isShareEnabled}
                 />
             </View>
             <View className="flex-row items-center justify-between">
                 <CustomText text="Zoom Control" />
                 <Switch
                     trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={isAutoRotateEnabled ? '#f5dd4b' : '#f4f3f4'}
+                    thumbColor={isZoomEnabled ? '#f5dd4b' : '#f4f3f4'}
                     ios_backgroundColor="#3e3e3e"
-                    onValueChange={toggleSwitch}
-                    value={isAutoRotateEnabled}
+                    onValueChange={() => toggleSwitch('Zoom')}
+                    value={isZoomEnabled}
                 />
             </View>
             <View className="flex-row items-center justify-between">
                 <CustomText text="Full Screen Control" />
                 <Switch
                     trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={isAutoRotateEnabled ? '#f5dd4b' : '#f4f3f4'}
+                    thumbColor={isFullScreenEnabled ? '#f5dd4b' : '#f4f3f4'}
                     ios_backgroundColor="#3e3e3e"
-                    onValueChange={toggleSwitch}
-                    value={isAutoRotateEnabled}
+                    onValueChange={() => toggleSwitch('FullScreen')}
+                    value={isFullScreenEnabled}
                 />
             </View>
             <View className="flex-row items-center justify-between">
                 <CustomText text="Auto Rotate Control" />
                 <Switch
                     trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={isAutoRotateEnabled ? '#f5dd4b' : '#f4f3f4'}
+                    thumbColor={isAutoRotateControlEnabled ? '#f5dd4b' : '#f4f3f4'}
                     ios_backgroundColor="#3e3e3e"
-                    onValueChange={toggleSwitch}
-                    value={isAutoRotateEnabled}
+                    onValueChange={() => toggleSwitch('AutoRotateControl')}
+                    value={isAutoRotateControlEnabled}
                 />
             </View>
             <View className="flex-row items-center justify-between">
                 <CustomText text="Compass" />
                 <Switch
                     trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={isAutoRotateEnabled ? '#f5dd4b' : '#f4f3f4'}
+                    thumbColor={isCompassEnabled ? '#f5dd4b' : '#f4f3f4'}
                     ios_backgroundColor="#3e3e3e"
-                    onValueChange={toggleSwitch}
-                    value={isAutoRotateEnabled}
+                    onValueChange={() => toggleSwitch('Compass')}
+                    value={isCompassEnabled}
                 />
             </View>
             <View className="flex-row items-center justify-between">
                 <CustomText text="Title" />
                 <Switch
                     trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={isAutoRotateEnabled ? '#f5dd4b' : '#f4f3f4'}
+                    thumbColor={isTitleEnabled ? '#f5dd4b' : '#f4f3f4'}
                     ios_backgroundColor="#3e3e3e"
-                    onValueChange={toggleSwitch}
-                    value={isAutoRotateEnabled}
+                    onValueChange={() => toggleSwitch('Title')}
+                    value={isTitleEnabled}
                 />
             </View>
         </View>

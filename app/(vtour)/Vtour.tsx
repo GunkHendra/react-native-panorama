@@ -8,11 +8,11 @@ import SceneEditor from "@/components/vtour-components/SceneEditor";
 import VtourDisplayer from "@/components/vtour-components/VtourDisplayer";
 import { defaultBlankVtourHotspot, defaultBlankVtourScene } from "@/constants/vtour";
 import { useUpdateVtour, useVtour } from "@/hooks/useVtour";
-import { PlayerHotspot, PlayerScene, VTour, VtourParams } from "@/interfaces/vtour";
+import { PlayerConfig, PlayerHotspot, PlayerScene, VTour, VtourParams } from "@/interfaces/vtour";
 import { AntDesign } from '@expo/vector-icons';
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Modal, Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 /**
@@ -47,28 +47,31 @@ const Vtour = () => {
     const [activeSceneId, setActiveSceneId] = useState("");
     const [activeHotspots, setActiveHotspots] = useState<PlayerHotspot[]>([]);
 
-    // Vtour scenes state (single source of truth for scenes data)
-    const [scenesState, setScenesState] = useState<Record<string, PlayerScene>>({});
+    // Vtour state (single source of truth for the whole vtour data (general, scene, hotspot))
+    const [vtourState, setVtourState] = useState<Partial<PlayerConfig>>({});
 
     // Api hook
     const updateVtour = useUpdateVtour();
 
     // Scene IDs for navigation (since scenesState is a dictionary, so we need an array of keys)
     const sceneIds = useMemo(() => {
-        return Object.keys(scenesState);
-    }, [scenesState]);
+        return Object.keys(vtourState.scenes || {});
+    }, [vtourState.scenes]);
 
     useEffect(() => {
         if (!vtourData) return;
         setVtourTitle(vtourData.title || "");
 
         if (!vtourData.code || !vtourData.code.scenes) {
-            setScenesState({
-                scene_1: defaultBlankVtourScene,
+            setVtourState({
+                ...vtourData.code,
+                scenes: {
+                    scene_1: defaultBlankVtourScene,
+                },
             });
             return;
         } else {
-            setScenesState(vtourData.code.scenes);
+            setVtourState(vtourData.code);
         }
     }, [vtourData]);
 
@@ -78,7 +81,7 @@ const Vtour = () => {
         if (!activeSceneId) {
             const firstScene = sceneIds[0];
             setActiveSceneId(firstScene);
-            const firstHotspots = scenesState[firstScene]?.hotSpots || [];
+            const firstHotspots = vtourState.scenes?.[firstScene]?.hotSpots || [];
             setActiveHotspots(firstHotspots);
         }
 
@@ -90,44 +93,71 @@ const Vtour = () => {
     }, [sceneIds]);
 
     const handleAddNewScene = () => {
-        const newId = `scene${Object.keys(scenesState).length + 1}`;
-        setScenesState((prev) => ({
+        const nextIndex = Object.keys(vtourState.scenes || {}).length + 1;
+        const newId = `scene_${nextIndex}`;
+        setVtourState((prev) => ({
             ...prev,
-            [newId]: defaultBlankVtourScene,
+            scenes: {
+                ...prev.scenes,
+                [newId]: { ...defaultBlankVtourScene },
+            },
         }));
         setActiveSceneId(newId);
     };
 
     const handleAddNewHotspot = (yaw: number, pitch: number) => {
-        const newHotspots = { ...defaultBlankVtourHotspot(activeHotspots.length, yaw, pitch) };
-        setActiveHotspots([...activeHotspots, newHotspots]);
-        setScenesState((prev) => ({
+        const newHotspot = { ...defaultBlankVtourHotspot(activeHotspots.length, yaw, pitch) };
+        const nextHotspots = [...activeHotspots, newHotspot];
+
+        setActiveHotspots(nextHotspots);
+        setVtourState((prev) => ({
             ...prev,
-            [activeSceneId]: { ...prev[activeSceneId], hotSpots: [...activeHotspots, newHotspots] },
+            scenes: {
+                ...prev.scenes,
+                [activeSceneId]: {
+                    ...(prev.scenes?.[activeSceneId] || defaultBlankVtourScene),
+                    hotSpots: nextHotspots,
+                },
+            },
         }));
         setHotspotPickingState(false);
     }
 
     // const handleSceneChange = (sceneId: string, patch: Partial<PlayerScene>) => {
     const handleSceneChange = (patch: Partial<PlayerScene>) => {
-        setScenesState((prev) => ({
+        setVtourState((prev) => ({
             ...prev,
-            [activeSceneId]: { ...prev[activeSceneId], ...patch },
+            scenes: {
+                ...prev.scenes,
+                [activeSceneId]: {
+                    ...(prev.scenes?.[activeSceneId] || defaultBlankVtourScene),
+                    ...patch,
+                },
+            },
         }));
     };
 
     const handleHotspotsChange = (newHotspots: PlayerHotspot[]) => {
-        setScenesState((prev) => ({
+        setVtourState((prev) => ({
             ...prev,
-            [activeSceneId]: { ...prev[activeSceneId], hotSpots: newHotspots },
+            scenes: {
+                ...prev.scenes,
+                [activeSceneId]: {
+                    ...(prev.scenes?.[activeSceneId] || defaultBlankVtourScene),
+                    hotSpots: newHotspots,
+                },
+            },
         }));
         setActiveHotspots(newHotspots);
     };
 
     const handleDeleteScene = (sceneId: string) => {
-        const updatedScenes = { ...scenesState };
+        const updatedScenes = { ...vtourState.scenes };
         delete updatedScenes[sceneId];
-        setScenesState(updatedScenes);
+        setVtourState((prev) => ({
+            ...prev,
+            scenes: updatedScenes,
+        }));
         // If the deleted scene was the active scene, switch to another scene
         if (activeSceneId === sceneId) {
             const remainingSceneIds = Object.keys(updatedScenes);
@@ -145,10 +175,7 @@ const Vtour = () => {
     const handleSave = async () => {
         const payload: Partial<VTour> = {
             title: vtourTitle,
-            code: {
-                ...vtourData?.code,
-                scenes: { ...scenesState },
-            },
+            code: vtourState as PlayerConfig,
         };
         await updateVtour.mutateAsync({ id: TOUR_ID, data: payload });
     };
@@ -159,7 +186,7 @@ const Vtour = () => {
         const nextIndex = (currentIndex + 1) % sceneIds.length;
         const nextSceneId = sceneIds[nextIndex];
         setActiveSceneId(nextSceneId);
-        setActiveHotspots(scenesState[nextSceneId]?.hotSpots || []);
+        setActiveHotspots(vtourState.scenes?.[nextSceneId]?.hotSpots || []);
     };
 
     const goPrevScene = () => {
@@ -167,7 +194,7 @@ const Vtour = () => {
         const prevIndex = (currentIndex - 1 + sceneIds.length) % sceneIds.length;
         const prevSceneId = sceneIds[prevIndex];
         setActiveSceneId(prevSceneId);
-        setActiveHotspots(scenesState[prevSceneId]?.hotSpots || []);
+        setActiveHotspots(vtourState.scenes?.[prevSceneId]?.hotSpots || []);
     };
 
     if (isLoading) {
@@ -228,11 +255,11 @@ const Vtour = () => {
                     </View>
                 }
                 <VtourDisplayer
-                    scenesState={scenesState}
+                    vtourState={vtourState}
                     activeSceneId={activeSceneId}
                     onSceneChange={(newSceneId) => {
                         setActiveSceneId(newSceneId);
-                        setActiveHotspots(scenesState[newSceneId]?.hotSpots || []);
+                        setActiveHotspots(vtourState.scenes?.[newSceneId]?.hotSpots || []);
                     }}
                     hotspotPickingState={hotspotPickingState}
                     onAddNewHotspot={handleAddNewHotspot}
@@ -250,7 +277,7 @@ const Vtour = () => {
                                     />
                                 </Pressable>
                             }
-                            <CustomText text={scenesState[activeSceneId]?.title ? scenesState[activeSceneId].title : `Untitled Scene`} size="normal" variant="light" />
+                            <CustomText text={vtourState.scenes?.[activeSceneId]?.title ? vtourState.scenes?.[activeSceneId].title : `Untitled Scene`} size="normal" variant="light" />
                             {hasMoreScenes &&
                                 <Pressable onPress={goNextScene}>
                                     <AntDesign
@@ -282,7 +309,7 @@ const Vtour = () => {
                     <GeneralEditor TOUR_ID={TOUR_ID} USER_ID={USER_ID} />
                 }
                 {activeTab === 'scenes' &&
-                    <SceneEditor TOUR_ID={TOUR_ID} USER_ID={USER_ID} activeScene={scenesState[activeSceneId]} activeSceneId={activeSceneId} onChangeScene={handleSceneChange} onDeleteScene={handleDeleteScene} />
+                    <SceneEditor TOUR_ID={TOUR_ID} USER_ID={USER_ID} activeScene={vtourState.scenes?.[activeSceneId] || null} activeSceneId={activeSceneId} onChangeScene={handleSceneChange} onDeleteScene={handleDeleteScene} />
                 }
                 {activeTab === 'hotspots' && (
                     activeHotspots.length === 0 ? (
@@ -291,7 +318,7 @@ const Vtour = () => {
                         </View>
 
                     ) : (
-                        <HotspotsEditor hotspots={activeHotspots} scenes={scenesState} onChangeHotspots={handleHotspotsChange} />
+                        <HotspotsEditor hotspots={activeHotspots} scenes={vtourState.scenes || {}} onChangeHotspots={handleHotspotsChange} />
                     )
                 )
                 }
@@ -321,35 +348,5 @@ const Vtour = () => {
 
 export default Vtour;
 
-const styles = StyleSheet.create({
-    container: {
-        borderRadius: 12,
-        marginTop: 8,
-        borderWidth: 1,
-        borderColor: 'rgba(1, 15, 28, 0.12)',
-        shadowColor: 'transparent',
-        elevation: 0,
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0,
-        shadowRadius: 0,
-    },
-    dropdown: {
-        borderColor: 'rgba(1, 15, 28, 0.12)',
-        borderWidth: 1,
-        borderRadius: 9999,
-        padding: 16,
-        fontSize: 14,
-        height: 50,
-        backgroundColor: '#FEFEFE',
-    },
-    placeholderStyle: {
-        fontSize: 14,
-        color: 'rgba(1, 15, 28, 0.40)',
-    },
-    selectedTextStyle: {
-        fontSize: 14,
-        color: 'rgba(1, 15, 28, 1)',
-    },
-});
 
 

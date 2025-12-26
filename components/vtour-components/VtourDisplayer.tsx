@@ -1,20 +1,18 @@
-import { PlayerScene } from "@/interfaces/vtour";
+import { PlayerConfig } from "@/interfaces/vtour";
 import { generateVtourHTML } from "@/utils/vtourHTMLGenerator";
 import React, { useEffect, useMemo, useRef } from "react";
-import { Dimensions, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import WebView from "react-native-webview";
 
-const { width } = Dimensions.get("window");
-
 interface VtourDisplayerProps {
-  scenesState: Record<string, PlayerScene>;
+  vtourState: Partial<PlayerConfig>;
   activeSceneId?: string;
   onSceneChange?: (id: string) => void;
   hotspotPickingState?: boolean;
   onAddNewHotspot?: (yaw: number, pitch: number) => void;
 }
 
-const VtourDisplayer = ({ scenesState, activeSceneId, onSceneChange, hotspotPickingState, onAddNewHotspot }: VtourDisplayerProps) => {
+const VtourDisplayer = ({ vtourState, activeSceneId, onSceneChange, hotspotPickingState, onAddNewHotspot }: VtourDisplayerProps) => {
   const webViewRef = useRef<WebView>(null);
   const renderCountRef = useRef(0);
   const htmlGenerationCountRef = useRef(0);
@@ -24,9 +22,9 @@ const VtourDisplayer = ({ scenesState, activeSceneId, onSceneChange, hotspotPick
   // Generate HTML content for WebView
   const htmlContent = useMemo(() => {
     htmlGenerationCountRef.current += 1;
-    if (Object.keys(scenesState).length === 0) return "";
-    return generateVtourHTML({ scenesState, activeSceneId });
-  }, [JSON.stringify(scenesState)]);
+    if (Object.keys(vtourState.scenes || {}).length === 0) return "";
+    return generateVtourHTML({ vtourState, activeSceneId });
+  }, [JSON.stringify(vtourState)]);
 
   // Sync active scene changes from React Native to WebView
   useEffect(() => {
@@ -70,7 +68,7 @@ const VtourDisplayer = ({ scenesState, activeSceneId, onSceneChange, hotspotPick
     }
   };
 
-  if (activeSceneId && !scenesState[activeSceneId].image) {
+  if (activeSceneId && !vtourState.scenes?.[activeSceneId].image) {
     return <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
       <View>
         <View style={{ width: 100, height: 100, borderRadius: 12, backgroundColor: '#ddd', justifyContent: 'center', alignItems: 'center' }}>

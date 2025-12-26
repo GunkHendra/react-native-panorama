@@ -3,8 +3,13 @@ import React, { useMemo } from 'react';
 import { View } from 'react-native';
 import HotspotItem from './HotspotItem';
 
-const HotspotsEditor = ({ hotspots, scenes, onChangeHotspots }: { hotspots: PlayerHotspot[], scenes: Record<string, PlayerScene>, onChangeHotspots: (hotspots: PlayerHotspot[]) => void }) => {
+interface HotspotsEditorProps {
+    hotspots: PlayerHotspot[];
+    scenes: Record<string, PlayerScene>;
+    onChangeHotspots: (hotspots: PlayerHotspot[]) => void;
+}
 
+const HotspotsEditor = ({ hotspots, scenes, onChangeHotspots }: HotspotsEditorProps) => {
     const scenesArray = useMemo(() => {
         return Object.entries(scenes).map(([id, scene]) => ({
             label: scene?.title ?? id,
