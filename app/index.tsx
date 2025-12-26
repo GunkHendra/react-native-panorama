@@ -96,9 +96,7 @@ const index = () => {
         const payload: Partial<VTour> = {
             status: status === "publish" ? "draft" : "publish",
         };
-        console.log("Payload for update:", payload);
         const response = await updateVtour.mutateAsync({ id: TOUR_ID, data: payload });
-        console.log("Update response:", response);
     };
 
     return (

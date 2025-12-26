@@ -1,7 +1,9 @@
+import { colors } from '@/constants/color'
 import { useAddNewImage, useGetFiles } from '@/hooks/useVtour'
+import { PlayerConfig } from '@/interfaces/vtour'
 import { Checkbox } from 'expo-checkbox'
 import * as ImagePicker from 'expo-image-picker'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { StyleSheet, Switch, View } from 'react-native'
 import CustomButton from '../Button'
 import InputField from '../InputField'
@@ -10,55 +12,138 @@ import CustomText from '../Text'
 interface GeneralEditorProps {
     TOUR_ID: string;
     USER_ID: string;
+    vtourState: Partial<PlayerConfig>;
+    onChangeVtourConfig: (newConfig: any) => void;
 }
 
-const GeneralEditor = ({ TOUR_ID, USER_ID }: GeneralEditorProps) => {
+const GeneralEditor = ({ TOUR_ID, USER_ID, vtourState, onChangeVtourConfig }: GeneralEditorProps) => {
     // Local states
-    const [image, setImage] = useState("");
+    // Image preview
+    const [imagePreview, setImagePreview] = useState("");
+
+    // Auto Rotate
     const [isAutoRotateEnabled, setIsAutoRotateEnabled] = useState(false);
-    const [isBackgroundLoadEnabled, setIsBackgroundLoadEnabled] = useState(false);
-    const [isThumbSliderEnabled, setIsThumbSliderEnabled] = useState(false);
-    const [isNextPrevEnabled, setIsNextPrevEnabled] = useState(false);
-    const [isShareEnabled, setIsShareEnabled] = useState(false);
-    const [isZoomEnabled, setIsZoomEnabled] = useState(false);
-    const [isFullScreenEnabled, setIsFullScreenEnabled] = useState(false);
+    const [autoRotateSpeed, setAutoRotateSpeed] = useState("");
+    const [autoRotateInactivityDelay, setAutoRotateInactivityDelay] = useState("");
     const [isAutoRotateControlEnabled, setIsAutoRotateControlEnabled] = useState(false);
+
+    // Scene fade duration
+    const [sceneFadeDuration, setSceneFadeDuration] = useState("");
+
+    // Background load
+    const [isBackgroundLoadEnabled, setIsBackgroundLoadEnabled] = useState(false);
+
+    // Thumb slider
+    const [isThumbSliderEnabled, setIsThumbSliderEnabled] = useState(false);
+
+    // Next/Prev control
+    const [isNextPrevEnabled, setIsNextPrevEnabled] = useState(false);
+    const [isLoopScenes, setIsLoopScenes] = useState(false);
+
+    // Share control
+    const [isShareEnabled, setIsShareEnabled] = useState(false);
+
+    // Zoom control
+    const [isZoomEnabled, setIsZoomEnabled] = useState(false);
+
+    // Full screen control
+    const [isFullScreenEnabled, setIsFullScreenEnabled] = useState(false);
+
+    // Compass    
     const [isCompassEnabled, setIsCompassEnabled] = useState(false);
+
+    // Title
     const [isTitleEnabled, setIsTitleEnabled] = useState(false);
-    const [isChecked, setChecked] = useState(false);
+
+    useEffect(() => {
+        if (!vtourState) return;
+        setImagePreview(vtourState.imagePreview || "");
+        setIsAutoRotateEnabled(!!vtourState.autoRotate);
+        setIsAutoRotateControlEnabled(!!vtourState.autoRotateControl);
+        setSceneFadeDuration(vtourState.sceneFadeDuration?.toString() || "");
+        setIsBackgroundLoadEnabled(!!vtourState.sceneBackgroundLoad);
+        setIsThumbSliderEnabled(!!vtourState.showSceneThumbsCtrl);
+        setIsNextPrevEnabled(!!vtourState.showSceneNextPrevCtrl);
+        setIsLoopScenes(!!vtourState.sceneNextPrevLoop);
+        setIsShareEnabled(!!vtourState.showShareCtrl);
+        setIsZoomEnabled(!!vtourState.showZoomCtrl);
+        setIsFullScreenEnabled(!!vtourState.showFullscreenCtrl);
+        setIsCompassEnabled(!!vtourState.compass);
+        setIsTitleEnabled(!!vtourState.title);
+    }, [vtourState]);
+
+    // Debounce Auto Rotate Inactivity Delay
+    useEffect(() => {
+        if (vtourState?.autoRotateInactivityDelay === Number(autoRotateInactivityDelay)) return;
+
+        const timeout = setTimeout(() => {
+            onChangeVtourConfig({ autoRotateInactivityDelay: Number(autoRotateInactivityDelay) });
+        }, 500);
+        return () => clearTimeout(timeout);
+    }, [autoRotateInactivityDelay]);
+
+    // Debounce Auto Rotate Speed
+    useEffect(() => {
+        if (vtourState?.autoRotateSpeed === Number(autoRotateSpeed)) return;
+
+        const timeout = setTimeout(() => {
+            onChangeVtourConfig({ autoRotateSpeed: Number(autoRotateSpeed) });
+        }, 500);
+        return () => clearTimeout(timeout);
+    }, [autoRotateSpeed]);
+
+    // Debounce Scene Fade Duration
+    useEffect(() => {
+        if (vtourState?.sceneFadeDuration === Number(sceneFadeDuration)) return;
+
+        const timeout = setTimeout(() => {
+            onChangeVtourConfig({ sceneFadeDuration: Number(sceneFadeDuration) });
+        }, 500);
+        return () => clearTimeout(timeout);
+    }, [sceneFadeDuration]);
 
     // Functions
     const toggleSwitch = (Opt: string) => {
         switch (Opt) {
             case 'AutoRotate':
                 setIsAutoRotateEnabled(previousState => !previousState);
+                onChangeVtourConfig({ autoRotate: !isAutoRotateEnabled });
                 break;
             case 'BackgroundLoad':
                 setIsBackgroundLoadEnabled(previousState => !previousState);
+                onChangeVtourConfig({ sceneBackgroundLoad: !isBackgroundLoadEnabled });
                 break;
             case 'ThumbSlider':
                 setIsThumbSliderEnabled(previousState => !previousState);
+                onChangeVtourConfig({ showSceneThumbsCtrl: !isThumbSliderEnabled });
                 break;
             case 'NextPrev':
                 setIsNextPrevEnabled(previousState => !previousState);
+                onChangeVtourConfig({ showSceneNextPrevCtrl: !isNextPrevEnabled });
                 break;
             case 'Share':
                 setIsShareEnabled(previousState => !previousState);
+                onChangeVtourConfig({ showShareCtrl: !isShareEnabled });
                 break;
             case 'Zoom':
                 setIsZoomEnabled(previousState => !previousState);
+                onChangeVtourConfig({ showZoomCtrl: !isZoomEnabled });
                 break;
             case 'FullScreen':
                 setIsFullScreenEnabled(previousState => !previousState);
+                onChangeVtourConfig({ showFullscreenCtrl: !isFullScreenEnabled });
                 break;
             case 'AutoRotateControl':
                 setIsAutoRotateControlEnabled(previousState => !previousState);
+                onChangeVtourConfig({ autoRotateControl: !isAutoRotateControlEnabled });
                 break;
             case 'Compass':
                 setIsCompassEnabled(previousState => !previousState);
+                onChangeVtourConfig({ compass: !isCompassEnabled });
                 break;
             case 'Title':
                 setIsTitleEnabled(previousState => !previousState);
+                onChangeVtourConfig({ title: !isTitleEnabled });
                 break;
             default:
                 break;
@@ -69,7 +154,7 @@ const GeneralEditor = ({ TOUR_ID, USER_ID }: GeneralEditorProps) => {
     const addNewImage = useAddNewImage();
     const { refetch: refetchFiles } = useGetFiles(USER_ID);
 
-    const handleThumbImage = async () => {
+    const handlePreviewImage = async () => {
         const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (!perm.granted) return;
 
@@ -102,8 +187,8 @@ const GeneralEditor = ({ TOUR_ID, USER_ID }: GeneralEditorProps) => {
 
             if (!newImagePath) return;
 
-            setImage(newImagePath);
-            // Notify parent component about the change if needed
+            setImagePreview(newImagePath);
+            onChangeVtourConfig({ imagePreview: newImagePath });
         } catch (e) {
             console.warn('Upload failed', e);
         }
@@ -112,24 +197,24 @@ const GeneralEditor = ({ TOUR_ID, USER_ID }: GeneralEditorProps) => {
     return (
         <View>
             <View className="gap-2">
-                <CustomText text="Upload Thumbnail" />
+                <CustomText text="Upload Preview Image" />
                 <CustomButton
                     text={addNewImage.isPending ? 'Uploading...' : 'Upload a file'}
                     variant="light"
-                    onPress={handleThumbImage}
+                    onPress={handlePreviewImage}
                     icon="upload"
                 />
-                {image ? (
-                    <CustomText text={`Selected: ${image}`} size="small" isDimmed />
+                {imagePreview ? (
+                    <CustomText text={`Selected: ${imagePreview}`} size="small" isDimmed />
                 ) : null}
             </View>
             <View>
                 <View className="flex-row items-center justify-between">
                     <CustomText text="Auto Rotate" />
                     <Switch
-                        trackColor={{ false: '#767577', true: '#81b0ff' }}
-                        thumbColor={isAutoRotateEnabled ? '#f5dd4b' : '#f4f3f4'}
-                        ios_backgroundColor="#3e3e3e"
+                        trackColor={{ false: colors.secondary, true: colors.primary }}
+                        thumbColor={isAutoRotateEnabled ? colors.background : colors.neutral[200]}
+                        ios_backgroundColor={colors.border}
                         onValueChange={() => toggleSwitch('AutoRotate')}
                         value={isAutoRotateEnabled}
                     />
@@ -137,14 +222,14 @@ const GeneralEditor = ({ TOUR_ID, USER_ID }: GeneralEditorProps) => {
                 {isAutoRotateEnabled &&
                     <View className="gap-2">
                         <InputField
-                            value=""
+                            value={autoRotateSpeed}
                             placeholder="Speed"
-                            onChangeText={(text) => { }}
+                            onChangeText={(text) => setAutoRotateSpeed(text)}
                         />
                         <InputField
-                            value=""
+                            value={autoRotateInactivityDelay}
                             placeholder="Inactivity Delay (ms)"
-                            onChangeText={(text) => { }}
+                            onChangeText={(text) => setAutoRotateInactivityDelay(text)}
                         />
                     </View>
                 }
@@ -152,18 +237,18 @@ const GeneralEditor = ({ TOUR_ID, USER_ID }: GeneralEditorProps) => {
             <View className="gap-2">
                 <CustomText text="Scene Fade Duration" />
                 <InputField
-                    value=""
+                    value={sceneFadeDuration}
                     placeholder="Duration in ms"
-                    onChangeText={(text) => { }}
+                    onChangeText={(text) => setSceneFadeDuration(text)}
                 />
             </View>
 
             <View className="flex-row items-center justify-between">
                 <CustomText text="Scene Images Background Load" />
                 <Switch
-                    trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={isBackgroundLoadEnabled ? '#f5dd4b' : '#f4f3f4'}
-                    ios_backgroundColor="#3e3e3e"
+                    trackColor={{ false: colors.secondary, true: colors.primary }}
+                    thumbColor={isBackgroundLoadEnabled ? colors.background : colors.neutral[200]}
+                    ios_backgroundColor={colors.border}
                     onValueChange={() => toggleSwitch('BackgroundLoad')}
                     value={isBackgroundLoadEnabled}
                 />
@@ -171,9 +256,9 @@ const GeneralEditor = ({ TOUR_ID, USER_ID }: GeneralEditorProps) => {
             <View className="flex-row items-center justify-between">
                 <CustomText text="Thumbnail Slider" />
                 <Switch
-                    trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={isThumbSliderEnabled ? '#f5dd4b' : '#f4f3f4'}
-                    ios_backgroundColor="#3e3e3e"
+                    trackColor={{ false: colors.secondary, true: colors.primary }}
+                    thumbColor={isThumbSliderEnabled ? colors.background : colors.neutral[200]}
+                    ios_backgroundColor={colors.border}
                     onValueChange={() => toggleSwitch('ThumbSlider')}
                     value={isThumbSliderEnabled}
                 />
@@ -182,9 +267,9 @@ const GeneralEditor = ({ TOUR_ID, USER_ID }: GeneralEditorProps) => {
                 <View className="flex-row items-center justify-between">
                     <CustomText text="Scene Next/Previous Control" />
                     <Switch
-                        trackColor={{ false: '#767577', true: '#81b0ff' }}
-                        thumbColor={isNextPrevEnabled ? '#f5dd4b' : '#f4f3f4'}
-                        ios_backgroundColor="#3e3e3e"
+                        trackColor={{ false: colors.secondary, true: colors.primary }}
+                        thumbColor={isNextPrevEnabled ? colors.background : colors.neutral[200]}
+                        ios_backgroundColor={colors.border}
                         onValueChange={() => toggleSwitch('NextPrev')}
                         value={isNextPrevEnabled}
                     />
@@ -194,9 +279,14 @@ const GeneralEditor = ({ TOUR_ID, USER_ID }: GeneralEditorProps) => {
                     <View className="gap-2 flex-row items-center">
                         <Checkbox
                             style={styles.checkbox}
-                            value={isChecked}
-                            onValueChange={setChecked}
-                            color={isChecked ? '#4630EB' : undefined}
+                            value={isLoopScenes}
+                            onValueChange={
+                                (value) => {
+                                    setIsLoopScenes(value);
+                                    onChangeVtourConfig({ sceneNextPrevLoop: value });
+                                }
+                            }
+                            color={isLoopScenes ? '#4630EB' : undefined}
                         />
                         <CustomText text="Loop Scenes" />
                     </View>
@@ -205,9 +295,9 @@ const GeneralEditor = ({ TOUR_ID, USER_ID }: GeneralEditorProps) => {
             <View className="flex-row items-center justify-between">
                 <CustomText text="Share Control" />
                 <Switch
-                    trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={isShareEnabled ? '#f5dd4b' : '#f4f3f4'}
-                    ios_backgroundColor="#3e3e3e"
+                    trackColor={{ false: colors.secondary, true: colors.primary }}
+                    thumbColor={isShareEnabled ? colors.background : colors.neutral[200]}
+                    ios_backgroundColor={colors.border}
                     onValueChange={() => toggleSwitch('Share')}
                     value={isShareEnabled}
                 />
@@ -215,9 +305,9 @@ const GeneralEditor = ({ TOUR_ID, USER_ID }: GeneralEditorProps) => {
             <View className="flex-row items-center justify-between">
                 <CustomText text="Zoom Control" />
                 <Switch
-                    trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={isZoomEnabled ? '#f5dd4b' : '#f4f3f4'}
-                    ios_backgroundColor="#3e3e3e"
+                    trackColor={{ false: colors.secondary, true: colors.primary }}
+                    thumbColor={isZoomEnabled ? colors.background : colors.neutral[200]}
+                    ios_backgroundColor={colors.border}
                     onValueChange={() => toggleSwitch('Zoom')}
                     value={isZoomEnabled}
                 />
@@ -225,9 +315,9 @@ const GeneralEditor = ({ TOUR_ID, USER_ID }: GeneralEditorProps) => {
             <View className="flex-row items-center justify-between">
                 <CustomText text="Full Screen Control" />
                 <Switch
-                    trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={isFullScreenEnabled ? '#f5dd4b' : '#f4f3f4'}
-                    ios_backgroundColor="#3e3e3e"
+                    trackColor={{ false: colors.secondary, true: colors.primary }}
+                    thumbColor={isFullScreenEnabled ? colors.background : colors.neutral[200]}
+                    ios_backgroundColor={colors.border}
                     onValueChange={() => toggleSwitch('FullScreen')}
                     value={isFullScreenEnabled}
                 />
@@ -235,9 +325,9 @@ const GeneralEditor = ({ TOUR_ID, USER_ID }: GeneralEditorProps) => {
             <View className="flex-row items-center justify-between">
                 <CustomText text="Auto Rotate Control" />
                 <Switch
-                    trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={isAutoRotateControlEnabled ? '#f5dd4b' : '#f4f3f4'}
-                    ios_backgroundColor="#3e3e3e"
+                    trackColor={{ false: colors.secondary, true: colors.primary }}
+                    thumbColor={isAutoRotateControlEnabled ? colors.background : colors.neutral[200]}
+                    ios_backgroundColor={colors.border}
                     onValueChange={() => toggleSwitch('AutoRotateControl')}
                     value={isAutoRotateControlEnabled}
                 />
@@ -245,9 +335,9 @@ const GeneralEditor = ({ TOUR_ID, USER_ID }: GeneralEditorProps) => {
             <View className="flex-row items-center justify-between">
                 <CustomText text="Compass" />
                 <Switch
-                    trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={isCompassEnabled ? '#f5dd4b' : '#f4f3f4'}
-                    ios_backgroundColor="#3e3e3e"
+                    trackColor={{ false: colors.secondary, true: colors.primary }}
+                    thumbColor={isCompassEnabled ? colors.background : colors.neutral[200]}
+                    ios_backgroundColor={colors.border}
                     onValueChange={() => toggleSwitch('Compass')}
                     value={isCompassEnabled}
                 />
@@ -255,9 +345,9 @@ const GeneralEditor = ({ TOUR_ID, USER_ID }: GeneralEditorProps) => {
             <View className="flex-row items-center justify-between">
                 <CustomText text="Title" />
                 <Switch
-                    trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={isTitleEnabled ? '#f5dd4b' : '#f4f3f4'}
-                    ios_backgroundColor="#3e3e3e"
+                    trackColor={{ false: colors.secondary, true: colors.primary }}
+                    thumbColor={isTitleEnabled ? colors.background : colors.neutral[200]}
+                    ios_backgroundColor={colors.border}
                     onValueChange={() => toggleSwitch('Title')}
                     value={isTitleEnabled}
                 />

@@ -63,12 +63,14 @@ export interface PlayerScene {
 // ==========================================
 export interface PlayerConfig {
   theme: string;
+  imagePreview: string | null;
 
   // Auto Load/Rotate Settings
   autoLoad: boolean;
   autoRotate: boolean;
   autoRotateSpeed: number;
   autoRotateInactivityDelay: number;
+  autoRotateControl: boolean;
 
   // Mouse/Input Interactions
   mouseWheelPreventDefault: boolean;

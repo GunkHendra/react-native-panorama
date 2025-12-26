@@ -114,6 +114,7 @@ export const generateVtourHTML = ({ vtourState, activeSceneId }: generateVtourHT
     <div id="panorama"></div>
 
     <script>
+      const vtour = ${JSON.stringify(vtourState)};
       const scenes = ${JSON.stringify(vtourState.scenes || {})};
       const baseUrl = ${JSON.stringify(BASE_IMG_URL)};
 
@@ -153,6 +154,7 @@ export const generateVtourHTML = ({ vtourState, activeSceneId }: generateVtourHT
             // title: scene.title ?? key,
             type: "equirectangular",
             panorama: getFullUrl(scene.image),
+            preview: getFullUrl(vtour.imagePreview),
             crossOrigin: "anonymous",
             yaw: parseFloat(scene.yaw) || 0, 
             pitch: parseFloat(scene.pitch) || 0,
@@ -166,12 +168,14 @@ export const generateVtourHTML = ({ vtourState, activeSceneId }: generateVtourHT
       var viewer = pannellum.viewer("panorama", {
         default: {
           firstScene: firstSceneId, // Starting scene
-          autoLoad: true,
+          autoLoad: vtour.autoLoad !== false,
           showControls: false,
           showLoader: false,
-          showFullscreenCtrl: false,
-          showZoomCtrl: false,
-          sceneFadeDuration: 3000,
+          showFullscreenCtrl: vtour.showFullscreenCtrl !== false,
+          showZoomCtrl: vtour.showZoomCtrl !== false,
+          sceneFadeDuration: vtour.sceneFadeDuration || 3000,
+          autoRotate: vtour.autoRotate ? vtour.autoRotateSpeed : 0, 
+          autoRotateInactivityDelay: vtour.autoRotate ? vtour.autoRotateInactivityDelay : 3000,
         },
         scenes: processedScenes, // use the processed scenes
       });

@@ -151,6 +151,13 @@ const Vtour = () => {
         setActiveHotspots(newHotspots);
     };
 
+    const handleVtourConfigChange = (newConfig: Partial<PlayerConfig>) => {
+        setVtourState((prev) => ({
+            ...prev,
+            ...newConfig,
+        }));
+    }
+
     const handleDeleteScene = (sceneId: string) => {
         const updatedScenes = { ...vtourState.scenes };
         delete updatedScenes[sceneId];
@@ -306,7 +313,7 @@ const Vtour = () => {
                 </View>
 
                 {activeTab === 'general' &&
-                    <GeneralEditor TOUR_ID={TOUR_ID} USER_ID={USER_ID} />
+                    <GeneralEditor TOUR_ID={TOUR_ID} USER_ID={USER_ID} vtourState={vtourState} onChangeVtourConfig={handleVtourConfigChange} />
                 }
                 {activeTab === 'scenes' &&
                     <SceneEditor TOUR_ID={TOUR_ID} USER_ID={USER_ID} activeScene={vtourState.scenes?.[activeSceneId] || null} activeSceneId={activeSceneId} onChangeScene={handleSceneChange} onDeleteScene={handleDeleteScene} />
