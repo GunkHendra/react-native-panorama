@@ -39,6 +39,8 @@ const SceneEditor = ({ TOUR_ID, USER_ID, activeScene, activeSceneId, onChangeSce
     }, [activeSceneId, activeScene]);
 
     useEffect(() => {
+        if (activeScene?.title === title) return;
+
         const timeout = setTimeout(() => {
             onChangeScene({ title });
         }, 500);
